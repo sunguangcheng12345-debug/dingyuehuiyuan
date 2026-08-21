@@ -1,0 +1,6 @@
+{
+  "name": "抖音充值中心特权会员",
+  "description": "动信通与抖音充值中心联合特权会员产品 PRD 文档与高保真交互式 UI 原型",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
