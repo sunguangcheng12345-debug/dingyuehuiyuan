@@ -1,70 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { CheckCircle2, ShieldCheck, ChevronRight } from 'lucide-react';
+import React from 'react';
+import { X, Check, ChevronRight } from 'lucide-react';
 
 interface OrderSuccessModalProps {
   onConfirm: () => void;
-  price?: number;
-  paymentAccount?: string;
+  onClose?: () => void;
 }
 
 export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
   onConfirm,
-  price = 1.99,
-  paymentAccount = '中信银行信用卡(2108)',
+  onClose,
 }) => {
   return (
-    <div className="fixed inset-0 bg-black/65 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 animate-fadeIn select-none">
-      <div className="bg-white text-slate-900 w-full max-w-[340px] rounded-3xl p-6 shadow-2xl relative animate-scaleUp text-center flex flex-col items-center">
-        
-        {/* TikTok Sign Icon Graphic */}
-        <div className="w-16 h-16 rounded-full bg-slate-950 flex items-center justify-center shadow-lg my-2 relative">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xl">
-            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.891 2.887 2.897 2.897 0 0 1-2.896-2.887 2.896 2.896 0 0 1 2.896-2.892c.383 0 .744.075 1.077.21v-3.55a6.408 6.408 0 0 0-1.077-.092C5.875 9.348 3 12.228 3 15.672 3 19.117 5.875 22 9.487 22c3.543 0 6.425-2.846 6.487-6.38V9.114a8.216 8.216 0 0 0 3.615.834V6.686z" />
-            </svg>
+    <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] z-50 flex flex-col justify-between overflow-hidden animate-fadeIn select-none">
+      {/* Top Push Notification Banner matching 截图 */}
+      <div className="p-3 pt-3 w-full">
+        <div className="w-full bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-xl flex items-center justify-between animate-slideDown border border-slate-100">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-[#FE2C55] text-white flex flex-col items-center justify-center font-black text-[11px] shrink-0 shadow-xs">
+              <span>动信</span>
+              <span className="text-[8px] -mt-0.5">会员</span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-bold text-slate-900 leading-tight">客服回复</div>
+              <div className="text-xs text-slate-500 truncate max-w-[200px] mt-0.5">
+                动信通官方旗舰店: 请查看您咨询的...
+              </div>
+            </div>
           </div>
+          <button 
+            onClick={onConfirm}
+            className="text-sm font-bold text-[#FE2C55] px-2.5 py-1 hover:bg-rose-50 rounded-lg shrink-0"
+          >
+            回复
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Sheet Drawer exactly matching uploaded screenshot */}
+      <div className="bg-white w-full rounded-t-[28px] px-6 pt-6 pb-12 shadow-2xl animate-slideUp relative flex flex-col items-center shrink-0">
+        {/* Top Left Close X in circle button */}
+        <button 
+          onClick={onClose || onConfirm}
+          className="absolute top-5 left-5 w-8 h-8 rounded-full bg-[#F4F5F7] text-slate-700 hover:text-slate-900 hover:bg-slate-200 flex items-center justify-center transition-colors"
+        >
+          <X className="w-4 h-4 stroke-[2.5]" />
+        </button>
+
+        {/* Big Green Success Circle */}
+        <div className="w-16 h-16 rounded-full border-[3px] border-[#00C583] flex items-center justify-center mt-4 mb-4 shadow-xs">
+          <Check className="w-9 h-9 text-[#00C583] stroke-[3.5]" />
         </div>
 
         {/* Title */}
-        <h2 className="text-xl font-black text-slate-900 mt-2 tracking-tight">签约成功</h2>
+        <h2 className="text-[20px] font-bold text-slate-900 tracking-normal text-center mb-8">
+          动信通自动续费开通成功
+        </h2>
 
-        {/* Details list matching 开通成功.png */}
-        <div className="w-full mt-6 space-y-3.5 text-xs text-left border-t border-slate-100 pt-4">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-medium">开通服务</span>
-            <span className="text-slate-900 font-bold">产品信息</span>
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 font-medium">扣款方式</span>
-              <span className="text-slate-900 font-bold text-right flex items-center space-x-1">
-                <span className="inline-block w-3.5 h-3.5 rounded-full bg-red-600 text-[8px] text-white text-center leading-3 font-bold">信</span>
-                <span className="truncate">优先从 {paymentAccount}扣款</span>
-              </span>
-            </div>
-            <div className="text-[10px] text-slate-400 text-right leading-tight">
-              可到「抖音钱包-支付设置-自动扣款管理」调整
-            </div>
+        {/* Payment Order Option Card - Soft gray rounded box with generous inner padding */}
+        <div className="w-full bg-[#F7F8FA] rounded-2xl px-5 py-4 flex items-center justify-between cursor-pointer mb-12">
+          <span className="text-[15px] text-slate-900 font-normal">付款方式</span>
+          <div className="flex items-center space-x-1.5 text-[14px] text-slate-700 font-normal">
+            <span>按默认顺序付款</span>
+            <ChevronRight className="w-4 h-4 text-slate-400 stroke-[2]" />
           </div>
         </div>
 
-        {/* Main CTA Button: 知道了 */}
-        <button
-          onClick={onConfirm}
-          className="mt-7 w-full bg-[#FE2C55] hover:bg-[#E01A4F] active:scale-[0.98] text-white font-black text-base py-3.5 rounded-xl shadow-lg shadow-rose-500/25 transition-transform"
-        >
-          知道了
-        </button>
-
-        {/* Footer Guarantee */}
-        <div className="mt-4 flex items-center justify-center space-x-2 text-[10px] text-slate-400">
-          <span className="font-bold text-slate-500">抖音支付</span>
-          <span>|</span>
-          <span>中国人保财险 提供百万保障</span>
+        {/* Bottom Gray CTA Button: 我知道了 - perfectly sized and centered matching screenshot */}
+        <div className="w-full flex justify-center">
+          <button
+            onClick={onConfirm}
+            className="w-[180px] bg-[#F2F3F5] hover:bg-[#E5E6EB] active:scale-[0.98] text-slate-900 font-medium text-[15px] py-2.5 rounded-xl transition-all text-center"
+          >
+            我知道了
+          </button>
         </div>
-
       </div>
     </div>
   );
 };
+
+

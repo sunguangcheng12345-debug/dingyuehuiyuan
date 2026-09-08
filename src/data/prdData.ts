@@ -44,7 +44,7 @@ export const CORE_BENEFITS_MATRIX: BenefitItem[] = [
     id: 'b1',
     category: '会员权益',
     title: '2元话费直减券',
-    subTitle: '每月充话费立减2元现金',
+    subTitle: '话费券充值任意号码均可抵扣',
     perceivedValue: '¥2.00/月',
     actualCost: '¥2.00 (动信通承担)',
     tag: '立减特权',
@@ -54,9 +54,10 @@ export const CORE_BENEFITS_MATRIX: BenefitItem[] = [
     actionText: '立即充值抵扣',
     businessReturn: '绑定高频连续扣款协议，拉高充值中心GMV与首购转化率',
     status: 'available',
-    description: '每月1日自动下发至用户账号，在充值中心充值任意金额话费（如10元、50元、100元）即可抵扣2元现金。',
+    description: '每月会员在小程序内领取放入券包，在充值中心为任意手机号充值话费时系统均自动抵扣2元现金。',
     details: [
       '每个月生效一次，当月未用不结转至次月',
+      '绑定当前登录账号，支持为本人或为他人手机号充值抵扣',
       '由动信通作为CP服务商全额补贴成本',
       '支持与支付立减/银行卡优惠叠加使用'
     ]
@@ -65,7 +66,7 @@ export const CORE_BENEFITS_MATRIX: BenefitItem[] = [
     id: 'b2',
     category: '会员权益',
     title: '2元 抖音电商券',
-    subTitle: '抖音商城全品类通用2元立减券',
+    subTitle: '电商券已发至当前抖音券包',
     perceivedValue: '¥2.00/月',
     actualCost: '电商平台联合补贴',
     tag: '电商立减',
@@ -75,10 +76,10 @@ export const CORE_BENEFITS_MATRIX: BenefitItem[] = [
     actionText: '一键领取',
     businessReturn: '促进抖音电商大盘GMV转化与会员高频复购粘性',
     status: 'available',
-    description: '抖音商城全品类通用优惠券，实付立减2元，支持与店铺满减、平台大促券叠加使用。',
+    description: '抖音商城全品类通用优惠券，实付立减2元，领取后直达当前登录账号的抖音卡券包。',
     details: [
-      '每月免费领取一张，直接放入个人抖音卡券包',
-      '支持抖音商城、直播间小黄车绝大多数实物商品',
+      '每月免费领取一张，直接放入当前登录账号的抖音卡券包',
+      '支持抖音商城、直播间小黄车全品类实物商品',
       '可与商家立减及抖音支付优惠叠加'
     ]
   },

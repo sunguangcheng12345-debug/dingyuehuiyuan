@@ -49,7 +49,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
         {/* Product Summary */}
         <div className="p-5 text-center bg-[#12131D] border-b border-[#2D3142]">
-          <div className="text-xs text-slate-400 font-medium">【充值会员】连续包月</div>
+          <div className="text-xs text-slate-400 font-medium">动信通充值会员</div>
           <div className="mt-2 flex items-baseline justify-center space-x-1">
             <span className="text-xs text-amber-400 font-black">仅需 ¥</span>
             <span className="text-3xl font-black italic text-amber-400 tracking-tight">1.99</span>
