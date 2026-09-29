@@ -347,20 +347,27 @@ export const PrdDocument: React.FC = () => {
                   <p>
                     <strong>【绝对解耦原则】：</strong>该区域为抖音店铺 SKU 商品列表，代表在售货架。任何情况下<strong>严禁出现“使用中”或置灰不可购买遮罩</strong>。即使已订购黑金卡，用户仍可在此处点击任意套餐（如加购生活特惠卡或加购充值会员），支持随时点击「开通」发起新一笔订阅提单。
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
                     <div className="bg-[#161823] p-3 rounded-lg border border-[#2D3142] space-y-1">
-                      <div className="font-bold text-white">卡片元素布局：</div>
+                      <div className="font-bold text-white">① 商品专属精致 Logo (Brand Logo)：</div>
                       <div className="text-[11px] text-slate-400 leading-relaxed">
-                        • 左侧资费：大字现价（¥1.99）+ 原价划线价 + 连续包月说明；<br/>
-                        • 中间权益分行展示：每行前面带绿色对勾（✓），分行排布防跳行；<br/>
-                        • 右侧操作：橙黄渐变「立即开通」圆角按钮。
+                        • 每张卡片左上角配置专属品牌 Logo（44×44px 圆角微标），按档位定制视觉（充值金币手机/生活餐饮美食/影音短剧VIP/黑金奢华皇冠）；<br/>
+                        • 右侧排布商品全称、档位标签与核心卖点副标，结构紧凑，一屏尽览。
                       </div>
                     </div>
                     <div className="bg-[#161823] p-3 rounded-lg border border-[#2D3142] space-y-1">
-                      <div className="font-bold text-white">折叠展开交互：</div>
+                      <div className="font-bold text-white">② 卡片主体信息与资费：</div>
                       <div className="text-[11px] text-slate-400 leading-relaxed">
-                        • 每张卡片底部提供小巧的「权益明细 ∨」下拉按钮；<br/>
-                        • 点击仅展开/收起该张卡片的完整权益与规则明细，状态独立记录，不影响其他卡片尺寸与排版稳定性。
+                        • 商品全称与档位标签，右侧聚合大字现价（¥1.99/月）、连续包月标识与省钱角标（如省52元）；<br/>
+                        • 权益列表采用彩色业务专属图标（话费/电商/外卖/短剧），分行规整排布。
+                      </div>
+                    </div>
+                    <div className="bg-[#161823] p-3 rounded-lg border border-[#2D3142] space-y-1">
+                      <div className="font-bold text-white">③ 展开交互与开通 CTA：</div>
+                      <div className="text-[11px] text-slate-400 leading-relaxed">
+                        • 左侧轻量「查看全部权益明细」胶囊切换折叠状态；<br/>
+                        • 右侧配置红橙渐变高点击率「立即开通」圆角 CTA 按钮；<br/>
+                        • 点击卡片整体支持高亮选中态（金色光环外圈与选中浮标）。
                       </div>
                     </div>
                   </div>

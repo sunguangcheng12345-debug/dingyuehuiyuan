@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { SimUserStatus, MembershipSku, MembershipSkuId } from '../types';
 import { MEMBERSHIP_SKUS, getSkuById } from '../data/membershipSkus';
 import { BenefitDetailPage } from './BenefitDetailPage';
+import { SkuProductLogo } from './SkuProductLogo';
 import { 
   Crown, 
   CheckCircle2,
@@ -14,7 +15,10 @@ import {
   MessageSquareQuote,
   ShieldCheck,
   Sparkles,
-  Clock
+  Clock,
+  ShoppingBag,
+  Utensils,
+  Film
 } from 'lucide-react';
 
 interface VipMemberCenterProps {
@@ -299,96 +303,125 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                   <div 
                     key={sku.id}
                     onClick={() => setSelectedSkuId(sku.id)}
-                    className={`rounded-2xl p-3 border cursor-pointer transition-all duration-200 active:scale-[0.99] space-y-2.5 ${
+                    className={`rounded-2xl p-3.5 border cursor-pointer transition-all duration-200 active:scale-[0.99] space-y-2.5 ${
                       isSelected 
-                        ? 'bg-gradient-to-r from-[#FFF8EE] via-[#FFF3EC] to-[#FFEFEA] border-amber-400 ring-1 ring-amber-300/70 shadow-xs' 
-                        : 'bg-white border-slate-150 hover:border-slate-200 shadow-2xs'
+                        ? 'bg-gradient-to-r from-[#FFF9F3] via-[#FFF5ED] to-[#FFF1EC] border-amber-400 ring-2 ring-amber-400/40 shadow-sm shadow-amber-500/10' 
+                        : 'bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs'
                     }`}
                   >
-                    {/* 第一行：商品名称及标签（左） + 价格、连续包月与省钱标签组合（右） */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center space-x-1.5 min-w-0">
-                        <span className="text-[13px] font-black text-slate-900 tracking-tight truncate">
-                          {sku.name}
-                        </span>
-                        {sku.badge && (
-                          <span className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full leading-normal shrink-0 ${
-                            sku.id === 'tier_0'
-                              ? 'bg-gradient-to-r from-[#FF5E1E] to-[#FE2C55] text-white' 
-                              : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {sku.badge}
-                          </span>
-                        )}
+                    {/* 第一行：左侧 Logo + 商品标题与卖点；右侧 价格 + 连续包月 + 省钱标签 */}
+                    <div className="flex items-center justify-between gap-2.5">
+                      {/* 左侧：Logo + 标题与副标 */}
+                      <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                        {/* 商品专属精美 Logo */}
+                        <SkuProductLogo skuId={sku.id} size="md" />
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-[13.5px] font-black text-slate-900 tracking-tight truncate">
+                              {sku.name}
+                            </span>
+                            {sku.badge && (
+                              <span className={`text-[9.5px] font-black px-1.5 py-0.5 rounded leading-none shrink-0 ${
+                                sku.id === 'tier_0'
+                                  ? 'bg-rose-50 text-[#FE2C55] border border-rose-200/60' 
+                                  : sku.id === 'tier_3'
+                                  ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}>
+                                {sku.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                            {sku.highlight}
+                          </p>
+                        </div>
                       </div>
 
-                      {/* 价格 + 连续包月 + 省钱标签（整洁聚合在第一行右上角） */}
-                      <div className="flex items-baseline space-x-1 shrink-0">
-                        <span className="text-xs font-bold text-[#FE2C55]">¥</span>
-                        <span className="text-base font-black text-[#FE2C55] tracking-tight leading-none">
-                          {sku.price.toFixed(2).replace(/\.00$/, '')}
-                        </span>
-                        <span className="text-[11px] font-bold text-[#FE2C55]">/月</span>
-                        <span className="text-[10px] text-slate-500 font-medium bg-slate-100/90 px-1 py-0.2 rounded leading-tight">
-                          连续包月
-                        </span>
-                        <span className="bg-[#FFE8E8] text-[#FE2C55] font-extrabold text-[10px] px-1.5 py-0.2 rounded leading-tight shrink-0">
-                          {monthlySave}
-                        </span>
+                      {/* 右侧：价格模块 */}
+                      <div className="flex flex-col items-end shrink-0">
+                        <div className="flex items-baseline space-x-0.5">
+                          <span className="text-xs font-bold text-[#FE2C55]">¥</span>
+                          <span className="text-base font-black text-[#FE2C55] tracking-tight leading-none">
+                            {sku.price.toFixed(2).replace(/\.00$/, '')}
+                          </span>
+                          <span className="text-[11px] font-bold text-[#FE2C55]">/月</span>
+                        </div>
+                        <div className="flex items-center space-x-1 mt-1">
+                          <span className="text-[10px] text-slate-500 font-medium bg-slate-100/90 px-1 py-0.2 rounded leading-tight">
+                            连续包月
+                          </span>
+                          <span className="bg-[#FFE8E8] text-[#FE2C55] font-black text-[10px] px-1.5 py-0.2 rounded leading-tight shrink-0">
+                            {monthlySave}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* 第二行：分行展示的权益 + 独立下拉展开小按钮 + 开通按钮 */}
-                    <div className="flex items-start justify-between gap-3 pt-1 border-t border-slate-100/80">
-                      {/* 权益列表区：无论折叠或展开，标题与文字始终在同一行起步，消除跳动与断行 */}
-                      <div className="space-y-1.5 min-w-0 flex-1">
-                        <div className="space-y-1">
-                          {displayedBenefits.map((row, idx) => (
-                            <div 
-                              key={idx} 
-                              className="flex items-start space-x-1.5 text-[11px] text-slate-700 leading-snug"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                              <div className={`min-w-0 flex-1 leading-snug ${
-                                isExpanded ? 'whitespace-normal break-words' : 'truncate'
-                              }`}>
-                                <span className="font-bold text-slate-800">{row.label}：</span>
-                                <span className="text-slate-600">{row.desc}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                    {/* 第二行：权益明细项：精美图标 + 权益标签 + 权益说明 */}
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100/90">
+                      {displayedBenefits.map((row, idx) => {
+                        // 根据权益类别匹配图标
+                        const BenefitIcon = 
+                          row.label.includes('话费') ? Smartphone :
+                          row.label.includes('电商') ? ShoppingBag :
+                          row.label.includes('美团') || row.label.includes('餐饮') ? Utensils :
+                          row.label.includes('短剧') ? Film :
+                          ShieldCheck;
 
-                        {/* 专属小下拉按钮：点击触发切换展开/收起全部权益明细 */}
-                        <div className="pt-0.5">
-                          <button
-                            type="button"
-                            onClick={(e) => toggleExpandSku(sku.id, e)}
-                            className="inline-flex items-center space-x-1 text-[10px] text-slate-600 hover:text-slate-900 bg-slate-100/90 hover:bg-slate-200/80 px-2 py-0.5 rounded-full transition-colors font-medium select-none active:scale-95 border border-slate-200/60"
+                        const iconColor =
+                          row.label.includes('话费') ? 'text-rose-500 bg-rose-50' :
+                          row.label.includes('电商') ? 'text-amber-600 bg-amber-50' :
+                          row.label.includes('美团') || row.label.includes('餐饮') ? 'text-orange-500 bg-orange-50' :
+                          row.label.includes('短剧') ? 'text-purple-600 bg-purple-50' :
+                          'text-emerald-600 bg-emerald-50';
+
+                        return (
+                          <div 
+                            key={idx} 
+                            className="flex items-start space-x-2 text-[11px] leading-snug"
                           >
-                            <span>{isExpanded ? '收起权益明细' : '查看全部权益明细'}</span>
-                            {isExpanded ? (
-                              <ChevronUp className="w-3 h-3 text-slate-500" />
-                            ) : (
-                              <ChevronDown className="w-3 h-3 text-slate-500" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
+                            <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${iconColor}`}>
+                              <BenefitIcon className="w-2.5 h-2.5" />
+                            </div>
+                            <div className={`min-w-0 flex-1 ${
+                              isExpanded ? 'whitespace-normal break-words' : 'truncate'
+                            }`}>
+                              <span className="font-bold text-slate-800">{row.label}：</span>
+                              <span className="text-slate-600">{row.desc}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
 
-                      {/* 开通按钮：纯净商品展示与开通入口，与用户是否已开通会员解耦 */}
-                      <div className="shrink-0 self-start pt-0.5">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedSkuId(sku.id);
-                            onOpenCheckout(sku);
-                          }}
-                          className="h-6 px-3.5 rounded-full text-[11px] font-black text-white active:scale-95 shadow-2xs transition-all bg-gradient-to-r from-[#FF9800] to-[#FE2C55] hover:brightness-105"
-                        >
-                          开通
-                        </button>
-                      </div>
+                    {/* 第三行：底部操作行：查看全部权益明细小按钮 + 立即开通 CTA 按钮 */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100/80">
+                      <button
+                        type="button"
+                        onClick={(e) => toggleExpandSku(sku.id, e)}
+                        className="inline-flex items-center space-x-1 text-[10px] text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/80 px-2 py-0.5 rounded-full transition-colors font-medium select-none active:scale-95 border border-slate-200/50"
+                      >
+                        <span>{isExpanded ? '收起权益明细' : '查看全部权益明细'}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="w-3 h-3 text-slate-500" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3 text-slate-500" />
+                        )}
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSkuId(sku.id);
+                          onOpenCheckout(sku);
+                        }}
+                        className="h-7 px-3.5 rounded-full text-[11px] font-black text-white active:scale-95 shadow-xs transition-all bg-gradient-to-r from-[#FF5E1E] to-[#FE2C55] hover:brightness-105 flex items-center space-x-1"
+                      >
+                        <span>立即开通</span>
+                        <ChevronRight className="w-3 h-3 -mr-0.5" />
+                      </button>
                     </div>
                   </div>
                 );

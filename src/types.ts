@@ -27,6 +27,11 @@ export interface MembershipSku {
   ecommerceCouponDesc: string; // "电商券总价值10元（按核销计费）"
   serviceDesc: string;         // "生活服务+短剧+美团券（按下发计费）"
   benefits: MembershipBenefitItem[];
+  // 头图与商品卡片视觉吸引力配置
+  bannerTitle?: string;        // 核心吸引点大标题
+  bannerSubtitle?: string;     // 副标题或核心卖点
+  bannerTag?: string;          // 视觉角标如 "🔥 特惠强推"
+  bannerTheme?: 'recharge' | 'life' | 'drama' | 'blackgold';
 }
 
 export type PrototypeScreen = 'recharge_home' | 'vip_center' | 'order_confirm' | 'order_success' | 'order_detail' | 'order_list' | 'renewal_management';

@@ -12,6 +12,10 @@ export const MEMBERSHIP_SKUS: MembershipSku[] = [
     highlight: '月省4.00元 · 本单立省2元',
     ecommerceCouponDesc: '每月赠送2.00元抖音商城通用券',
     serviceDesc: '话费直减2.00元+抖音电商券2.00元',
+    bannerTheme: 'recharge',
+    bannerTag: '🔥 特惠强推 · 充值立省',
+    bannerTitle: '每月充值直减 2.00元',
+    bannerSubtitle: '话费充值无门槛抵扣 · 附赠2元抖音电商券',
     benefits: [
       {
         id: 't0_b1',
@@ -44,6 +48,10 @@ export const MEMBERSHIP_SKUS: MembershipSku[] = [
     highlight: '月省52.1元 · 6.2倍超高回报',
     ecommerceCouponDesc: '电商券（按核销计费）总价值10元',
     serviceDesc: '生活服务+短剧+美团券（按下发计费）',
+    bannerTheme: 'life',
+    bannerTag: '🍔 超值生活 · 高频省钱',
+    bannerTitle: '美团50元神券包 + 10元电商券',
+    bannerSubtitle: '月省52.1元 · 外卖生鲜高频省 · 6.2倍高回报',
     benefits: [
       {
         id: 't1_b1',
@@ -85,6 +93,10 @@ export const MEMBERSHIP_SKUS: MembershipSku[] = [
     highlight: '短剧追更神器 · 外卖网购全拿下',
     ecommerceCouponDesc: '电商券（按核销计费）总价值13元',
     serviceDesc: '生活服务+短剧+美团券（按下发计费）',
+    bannerTheme: 'drama',
+    bannerTag: '🎬 爆款热卖 · 追剧神器',
+    bannerTitle: '短剧免广告双周VIP + 60元神券',
+    bannerSubtitle: '热门短剧全集免广告畅看 · 享13元电商券',
     benefits: [
       {
         id: 't2_b1',
@@ -126,6 +138,10 @@ export const MEMBERSHIP_SKUS: MembershipSku[] = [
     highlight: '全权益顶配 · 整月无界追剧与外卖',
     ecommerceCouponDesc: '电商券（按核销计费）总价值20元',
     serviceDesc: '生活服务+短剧+美团券（按下发计费）',
+    bannerTheme: 'blackgold',
+    bannerTag: '👑 尊享旗舰 · 顶级全景',
+    bannerTitle: '短剧整月VIP无限看 + 90元神券',
+    bannerSubtitle: '整月无限制解锁热剧 · 20元大额电商券 · 顶级配置',
     benefits: [
       {
         id: 't3_b1',
