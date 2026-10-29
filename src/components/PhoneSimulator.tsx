@@ -28,9 +28,9 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
   const [selectedRechargeAmount, setSelectedRechargeAmount] = useState(50);
   const [userPhone, setUserPhone] = useState('');
 
-  // Track the currently selected SKU and user's subscribed SKUs (supports purchasing multiple products)
-  const [selectedSku, setSelectedSku] = useState<MembershipSku>(MEMBERSHIP_SKUS[0]); // Default Tier 0 (1.99元连续包月)
-  const [subscribedSkuIds, setSubscribedSkuIds] = useState<MembershipSkuId[]>(['tier_3']); // 默认已购1款：黑金尊享月卡
+  // Track the currently selected SKU and user's subscribed SKUs
+  const [selectedSku, setSelectedSku] = useState<MembershipSku>(MEMBERSHIP_SKUS[0]); // 1.99元连续包月
+  const [subscribedSkuIds, setSubscribedSkuIds] = useState<MembershipSkuId[]>([]); // 默认新客未开通状态
 
   // Step 1: Click "立即开通" in mini program SKU card -> Navigate to OrderConfirmPage (提单页)
   const handleOpenCheckout = (skuOrAmount?: MembershipSku | number) => {
@@ -67,83 +67,59 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
       <div className="mb-4 bg-[#161823] border border-[#2D3142] p-3 rounded-2xl flex flex-col gap-2.5 max-w-[420px] w-full shadow-xl">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#FE2C55]" />
-            <span>连包会员交易全流程演练:</span>
+            <span className="w-2 h-2 rounded-full bg-[#1C68F2]" />
+            <span>通信服务中心 · 会员流程演练:</span>
           </span>
           <button
             onClick={() => {
               if (userStatus === 'non_member' || subscribedSkuIds.length === 0) {
                 setUserStatus('active_member');
-                setSubscribedSkuIds(['tier_3']);
+                setSubscribedSkuIds(['tier_0']);
               } else {
                 setUserStatus('non_member');
                 setSubscribedSkuIds([]);
               }
             }}
-            className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 hover:bg-amber-400/30 transition-colors"
+            className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 hover:bg-blue-400/30 transition-colors"
           >
             {userStatus === 'non_member' || subscribedSkuIds.length === 0 
-              ? '用户身份: 未订购' 
-              : `已订购: ${subscribedSkuIds.length}款权益商品`}
+              ? '用户身份: 未开通 (首月0.01元)' 
+              : '用户身份: DXT会员已生效 (1.99元/月)'}
           </button>
         </div>
 
-        {/* Quick Multi-Tier Subscription Simulator Toolbar */}
+        {/* Quick Subscription Simulator Toolbar */}
         <div className="bg-[#0f1017] p-2 rounded-xl border border-[#252836] flex items-center justify-between gap-1 text-[10px]">
           <span className="text-slate-400 font-medium shrink-0 flex items-center space-x-1">
             <Crown className="w-3 h-3 text-amber-400" />
-            <span>多权益购买演练:</span>
+            <span>身份快捷切换:</span>
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => {
                 setUserStatus('non_member');
                 setSubscribedSkuIds([]);
               }}
-              className={`px-1.5 py-0.8 rounded font-bold transition-all ${
-                userStatus === 'non_member' || subscribedSkuIds.length === 0 ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                userStatus === 'non_member' || subscribedSkuIds.length === 0 
+                  ? 'bg-slate-700 text-white shadow-xs' 
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              未开通
+              未开通(新客)
             </button>
             <button
               onClick={() => {
                 setUserStatus('active_member');
-                setSubscribedSkuIds(['tier_3']); // 1款：黑金尊享月卡
+                setSubscribedSkuIds(['tier_0']); // DXT通信充值会员
               }}
-              className={`px-1.5 py-0.8 rounded font-bold transition-all ${
-                userStatus === 'active_member' && subscribedSkuIds.length === 1 && subscribedSkuIds[0] === 'tier_3'
-                  ? 'bg-purple-600 text-white font-black shadow-xs' 
-                  : 'text-purple-300/70 hover:text-purple-200'
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                userStatus === 'active_member' && subscribedSkuIds.includes('tier_0')
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-xs' 
+                  : 'text-blue-300/70 hover:text-blue-200'
               }`}
             >
-              已购1款
-            </button>
-            <button
-              onClick={() => {
-                setUserStatus('active_member');
-                setSubscribedSkuIds(['tier_3', 'tier_2']); // 2款：黑金 + 影音畅享
-              }}
-              className={`px-1.5 py-0.8 rounded font-bold transition-all ${
-                userStatus === 'active_member' && subscribedSkuIds.length === 2
-                  ? 'bg-emerald-600 text-white font-black shadow-xs' 
-                  : 'text-emerald-300/70 hover:text-emerald-200'
-              }`}
-            >
-              已购2款
-            </button>
-            <button
-              onClick={() => {
-                setUserStatus('active_member');
-                setSubscribedSkuIds(['tier_3', 'tier_2', 'tier_0']); // 3款：黑金 + 影音 + 充值会员
-              }}
-              className={`px-1.5 py-0.8 rounded font-bold transition-all ${
-                userStatus === 'active_member' && subscribedSkuIds.length >= 3
-                  ? 'bg-[#FE2C55] text-white font-black shadow-xs' 
-                  : 'text-rose-300/70 hover:text-rose-200'
-              }`}
-            >
-              已购3款
+              已开通DXT会员
             </button>
           </div>
         </div>

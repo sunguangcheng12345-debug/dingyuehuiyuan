@@ -188,11 +188,11 @@ export const DouyinRechargeHome: React.FC<DouyinRechargeHomeProps> = ({
               className="mt-3 bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-200/80 rounded-2xl p-2.5 flex items-center justify-between cursor-pointer hover:border-amber-300 transition-colors shadow-sm"
             >
               <div className="flex items-center space-x-2 min-w-0 flex-1">
-                <span className="bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded shrink-0">
-                  会员特惠
+                <span className="bg-gradient-to-r from-amber-500 to-rose-500 text-white font-black text-[10px] px-1.5 py-0.5 rounded shrink-0">
+                  首月0.01
                 </span>
                 <span className="text-xs font-bold text-slate-800 truncate">
-                  1.99元/月开通【充值会员】领2元话费券+2元电商券
+                  开通【DXT通信充值会员】享2元话费+随机电商券+美团生活券
                 </span>
               </div>
               <div className="flex items-center text-xs font-bold text-[#FE2C55] shrink-0 ml-1">

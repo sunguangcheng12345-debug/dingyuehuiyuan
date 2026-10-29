@@ -19,10 +19,11 @@ export const OrderConfirmPage: React.FC<OrderConfirmPageProps> = ({
   selectedSku,
   hideBottomBar = false,
 }) => {
-  const finalPrice = selectedSku ? selectedSku.price : (price ?? 1.99);
-  const skuName = selectedSku ? selectedSku.name : '动信通充值会员';
-  const skuTier = selectedSku ? selectedSku.tierNumber : '连包月卡';
-  const skuShortName = selectedSku ? selectedSku.shortName : '月卡';
+  const firstMonthPrice = selectedSku?.firstMonthPrice ?? (price ?? 0.01);
+  const renewalPrice = selectedSku?.renewalPrice ?? selectedSku?.price ?? 1.99;
+  const skuName = selectedSku ? selectedSku.name : 'DXT通信充值会员';
+  const skuTier = selectedSku ? selectedSku.tierNumber : '首月0.01元';
+  const skuShortName = selectedSku ? selectedSku.shortName : '通信充值会员';
   const [inputPhone, setInputPhone] = useState(phone);
   const [phoneError, setPhoneError] = useState(false);
   const [phoneShield, setPhoneShield] = useState(true);
@@ -122,8 +123,8 @@ export const OrderConfirmPage: React.FC<OrderConfirmPageProps> = ({
 
           {/* Pricing Policy Box */}
           <div className="bg-[#F8F9FA] rounded-xl p-3 text-xs leading-relaxed text-slate-600 font-normal">
-            <span className="text-[#FE2C55] font-bold">前1个月每月{finalPrice.toFixed(2)}元</span>
-            <span>，后期每月{finalPrice.toFixed(2)}元，自动续订，可随时取消</span>
+            <span className="text-[#FE2C55] font-bold">首月优惠价仅需 {firstMonthPrice.toFixed(2)} 元</span>
+            <span>，次月起恢复为每月 {renewalPrice.toFixed(2)} 元，自动续订，按自然月计费，可随时取消</span>
           </div>
         </div>
 
@@ -132,25 +133,25 @@ export const OrderConfirmPage: React.FC<OrderConfirmPageProps> = ({
           {/* Shop Name with TikTok Flagship Badge */}
           <div className="flex items-center space-x-1.5">
             <span className="bg-[#161823] text-[#FFE8D6] text-[9px] font-black px-1.5 py-0.5 rounded flex items-center">
-              抖音旗舰
+              官方旗舰
             </span>
-            <span className="text-xs font-extrabold text-slate-900">动信通官方旗舰店</span>
+            <span className="text-xs font-extrabold text-slate-900">通信服务中心官方旗舰店</span>
           </div>
 
           <div className="flex items-start space-x-3">
-            {/* Product Cover matching 动信通充值会员 */}
-            <div className="w-20 h-24 rounded-xl bg-gradient-to-b from-[#FEE8D6] to-[#FDCEB9] p-2 flex flex-col justify-between text-slate-800 shrink-0 shadow-sm border border-amber-200/60 relative overflow-hidden">
+            {/* Product Cover matching DXT通信充值会员 */}
+            <div className="w-20 h-24 rounded-xl bg-gradient-to-b from-[#E8F1FF] to-[#D0E2FF] p-2 flex flex-col justify-between text-slate-800 shrink-0 shadow-sm border border-blue-200/60 relative overflow-hidden">
               <span className="text-[8px] font-black bg-[#FE2C55] text-white px-1.5 py-0.5 rounded-br-lg rounded-tl-sm absolute top-0 left-0">
-                {selectedSku?.badge || '热卖爆款'}
+                {selectedSku?.badge || '首月0.01元'}
               </span>
               <div className="mt-4 text-center">
-                <div className="text-[9px] font-bold text-amber-900 leading-tight truncate">{skuShortName}</div>
-                <div className="text-[8px] text-amber-800">{skuTier}</div>
-                <div className="text-sm font-black text-[#FE2C55] mt-0.5">¥{finalPrice.toFixed(2)}</div>
-                <div className="text-[7px] text-slate-500 scale-90 truncate">总值¥{selectedSku?.nominalValue || 93}</div>
+                <div className="text-[9px] font-bold text-blue-950 leading-tight truncate">{skuShortName}</div>
+                <div className="text-[8px] text-blue-800">{skuTier}</div>
+                <div className="text-sm font-black text-[#FE2C55] mt-0.5">¥{firstMonthPrice.toFixed(2)}</div>
+                <div className="text-[7px] text-slate-500 scale-90 truncate">次月¥{renewalPrice.toFixed(2)}/月</div>
               </div>
-              <div className="text-[6px] text-center text-slate-400 scale-75 truncate">
-                {selectedSku?.benefits[0]?.title || '全品类立减券'}
+              <div className="text-[6px] text-center text-slate-500 scale-75 truncate">
+                {selectedSku?.benefits[0]?.title || '2元话费直减券'}
               </div>
             </div>
 
@@ -162,7 +163,10 @@ export const OrderConfirmPage: React.FC<OrderConfirmPageProps> = ({
                     <span>【连包专属】{skuName}</span>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-400 rotate-90 shrink-0" />
                   </h3>
-                  <span className="text-sm font-black text-slate-900 shrink-0">¥{finalPrice.toFixed(2)}</span>
+                  <div className="text-right shrink-0">
+                    <span className="text-sm font-black text-[#FE2C55]">¥{firstMonthPrice.toFixed(2)}</span>
+                    <div className="text-[9px] text-slate-400 line-through">¥{renewalPrice.toFixed(2)}</div>
+                  </div>
                 </div>
                 <div className="text-[11px] text-slate-400 mt-1">{skuTier} · {skuShortName}</div>
               </div>
@@ -350,9 +354,10 @@ export const OrderConfirmPage: React.FC<OrderConfirmPageProps> = ({
         <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 z-30 shadow-lg flex items-center justify-center">
           <button
             onClick={handlePayButtonClick}
-            className="w-full bg-[#FE2C55] hover:bg-[#E01A4F] active:scale-[0.98] text-white font-extrabold text-base py-3 rounded-full shadow-lg shadow-rose-500/25 transition-transform flex items-center justify-center"
+            className="w-full bg-[#FE2C55] hover:bg-[#E01A4F] active:scale-[0.98] text-white font-extrabold text-base py-3 rounded-full shadow-lg shadow-rose-500/25 transition-transform flex items-center justify-center space-x-1.5"
           >
-            立即支付 ¥{finalPrice.toFixed(2)}
+            <span>立即支付 ¥{firstMonthPrice.toFixed(2)}</span>
+            <span className="text-xs font-normal opacity-90">(首月特惠立省1.98元)</span>
           </button>
         </div>
       )}

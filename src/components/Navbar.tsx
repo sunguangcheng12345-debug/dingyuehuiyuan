@@ -23,19 +23,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* Left Branding */}
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 via-red-500 to-amber-400 p-0.5 flex items-center justify-center shadow-lg shadow-rose-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-black text-rose-500 text-lg">
-              抖
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-400 p-0.5 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-black text-blue-400 text-sm">
+              DXT
             </div>
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-bold text-base tracking-tight text-slate-100">动信通 × 抖音充值中心</span>
-              <span className="bg-gradient-to-r from-amber-400 to-[#FE2C55] text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                【充值会员】 PRD & 原型
+              <span className="font-bold text-base tracking-tight text-slate-100">通信服务中心</span>
+              <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                DXT通信充值会员
               </span>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">1.99元连续包月 | 2元话费直减 | 运营商CPA/CPS高收益闭环</p>
+            <p className="text-xs text-slate-400 hidden sm:block">首月0.01元 · 次月1.99元/月 · 2元话费必得 · 电商神券随机2选1 · 连续签到美团券</p>
           </div>
         </div>
 

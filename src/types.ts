@@ -17,15 +17,17 @@ export interface MembershipBenefitItem {
 
 export interface MembershipSku {
   id: MembershipSkuId;
-  tierNumber: string; // "档位 1" | "档位 2" | "档位 3"
-  name: string;       // "黄金会员·生活包" 等
-  shortName: string;  // "生活包" / "影音畅享包" / "黑金全景包"
-  price: number;      // 9.9 | 19 | 29
-  nominalValue: number; // 62 | 93 | 128
-  badge: string;      // "尝鲜特惠" | "热卖爆款" | "尊享旗舰"
+  tierNumber: string; // "特惠强推" 等
+  name: string;       // "DXT通信充值会员"
+  shortName: string;  // "通信充值会员"
+  price: number;      // 1.99 续费价格
+  firstMonthPrice?: number; // 0.01 首月特惠价格
+  renewalPrice?: number;    // 1.99 次月续费价格
+  nominalValue: number; // 感知价值如 72.0
+  badge: string;      // "特惠立省"
   highlight: string;
-  ecommerceCouponDesc: string; // "电商券总价值10元（按核销计费）"
-  serviceDesc: string;         // "生活服务+短剧+美团券（按下发计费）"
+  ecommerceCouponDesc: string; // "随机2选1：50元抖音电商新人券 / 满99减5专享券"
+  serviceDesc: string;         // "2元话费直减券 + 抖音电商神券 + 签到美团生活券"
   benefits: MembershipBenefitItem[];
   // 头图与商品卡片视觉吸引力配置
   bannerTitle?: string;        // 核心吸引点大标题

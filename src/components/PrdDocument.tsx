@@ -36,18 +36,17 @@ export const PrdDocument: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const handleCopySummary = () => {
-    navigator.clipboard.writeText(`动信通权益小程序产品需求文档 (PRD) V2.0
+    navigator.clipboard.writeText(`通信服务中心 - DXT通信充值会员产品需求文档 (PRD) V3.0
 一、核心定位与业务突破：
-1. 支持同一用户购买多款权益产品（多商品并行生效、时效独立核算）
-2. 权益套餐列表与会员状态解耦展示，作为标准货架不展示“使用中”，支持随时加购
-3. 两级页面架构：主页展示生效卡片概览，点击卡片跳转至二级【全部权益】明细页（卡片式已发放状态）
-二、商品矩阵：
-- 特惠强推档（1.99元/月）：2元话费直减券 + 2元抖音电商券
-- 档位 1 生活特惠月卡（9.90元/月）：10元电商券 + 生活服务券 + 美团神券50元
-- 档位 2 影音畅享月卡（19.00元/月）：13元电商券 + 抖音短剧双周卡 + 美团神券60元
-- 档位 3 黑金尊享月卡（29.00元/月）：20元电商大额券 + 抖音短剧月卡 + 美团神券90元
-三、交易与履约闭环：
-小程序选择 -> 提单页服务协议与自动续费授权 -> 充值手机号二次确认 -> 自动续费开通成功 -> 履约订单详情。工信部扣款前5天强提醒，随时退订。`);
+1. 聚焦 DXT通信充值会员，新用户首月仅需0.01元，次月恢复1.99元/月连续包月自动续费；
+2. 小程序命名规范为【通信服务中心】，严禁出现外部运营商与非许可品牌；
+3. 核心权益双气泡呈现：
+   - 每月必得：2元话费直减券（无门槛直接抵扣）
+   - 随机2选1：最高50元抖音电商新人券 或 满99减5抖音电商专享券（后端基于手机号画像判断，前端趣味盲盒呈现）
+4. 会员天天打卡专属签到福利：
+   - 连续签到3天：免费领取10元美团生活券
+   - 连续签到5天：免费领取20元美团生活券
+5. 业务说明与常见问题规范：严格对标官方透明计费规范，开通前合规提示，随时支持退订。`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -60,15 +59,15 @@ export const PrdDocument: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#FE2C55]/10 border border-[#FE2C55]/30 text-[#FE2C55] text-xs font-semibold mb-3">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>抖音内部业务评审规范文档 · V2.0 终审版</span>
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#1C68F2]/10 border border-[#1C68F2]/30 text-blue-400 text-xs font-semibold mb-3">
+                <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                <span>通信服务中心业务评审规范文档 · V3.0 终审版</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                动信通权益小程序产品需求文档 (PRD)
+                通信服务中心 · DXT通信充值会员产品需求文档 (PRD)
               </h1>
               <p className="mt-2 text-slate-400 text-sm max-w-3xl leading-relaxed">
-                全面规范动信通权益小程序多档位会员连续包月交易链路、同一用户多权益产品叠加订购逻辑、货架与会员解耦规范、两级页面流转与全部权益明细交互规范。
+                全面规范通信服务中心小程序DXT通信充值会员首月0.01元尝鲜、次月1.99元连续包月交易链路、2元话费必得直减、电商神券随机2选1盲盒机制、连续签到美团券履约与退订管理。
               </p>
             </div>
 
@@ -87,19 +86,21 @@ export const PrdDocument: React.FC = () => {
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#1F2231] p-4 rounded-2xl border border-[#2D3142] text-xs mt-6">
             <div>
-              <div className="text-slate-400 font-medium">业务形态</div>
-              <div className="text-amber-400 font-black text-sm sm:text-base mt-0.5">多权益独立连续包月</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">同一用户可多购、权益叠加</div>
+              <div className="text-slate-400 font-medium">会员名称与形态</div>
+              <div className="text-blue-400 font-black text-sm sm:text-base mt-0.5">DXT通信充值会员</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">首月0.01元 / 次月1.99元续费</div>
             </div>
+
             <div>
-              <div className="text-slate-400 font-medium">商品梯度矩阵</div>
-              <div className="text-emerald-400 font-black text-sm sm:text-base mt-0.5">4大核心档位 (1.99~29元)</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">特惠充值+生活+影音+黑金</div>
+              <div className="text-slate-400 font-medium">核心双气泡权益</div>
+              <div className="text-emerald-400 font-black text-sm sm:text-base mt-0.5">2元话费 + 电商2选1</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">必得2元话费券 + 最高50元电商券</div>
             </div>
+
             <div>
-              <div className="text-slate-400 font-medium">核心交互架构</div>
-              <div className="text-blue-400 font-black text-sm sm:text-base mt-0.5">解耦货架 + 两级明细流转</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">商品常态在售 + 点击查权益</div>
+              <div className="text-slate-400 font-medium">专属签到激励</div>
+              <div className="text-orange-400 font-black text-sm sm:text-base mt-0.5">3天10元 / 5天20元</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">美团生活券连续打卡奖励</div>
             </div>
             <div>
               <div className="text-slate-400 font-medium">合规与风控保障</div>
@@ -222,7 +223,7 @@ export const PrdDocument: React.FC = () => {
                   <span className="w-2.5 h-5 bg-[#FE2C55] rounded-full inline-block" />
                   <span>2. 商品梯度矩阵与资费定义 (SKU Matrix)</span>
                 </h2>
-                <span className="text-xs text-slate-400">共配置 4 款标准 SKU，全部支持自动续费连续包月</span>
+                <span className="text-xs text-slate-400">配置 1.99元标准连续包月特惠 SKU，支持自动续费连续包月</span>
               </div>
 
               <div className="overflow-x-auto">

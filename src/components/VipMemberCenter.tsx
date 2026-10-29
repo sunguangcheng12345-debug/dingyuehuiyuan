@@ -1,518 +1,1052 @@
-import React, { useState, useMemo } from 'react';
-import { SimUserStatus, MembershipSku, MembershipSkuId } from '../types';
-import { MEMBERSHIP_SKUS, getSkuById } from '../data/membershipSkus';
-import { BenefitDetailPage } from './BenefitDetailPage';
-import { SkuProductLogo } from './SkuProductLogo';
+import React, { useState } from 'react';
 import { 
-  Crown, 
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
+  Smartphone, 
+  ShoppingBag, 
+  Utensils, 
+  ChevronLeft, 
+  ChevronRight, 
+  CheckCircle2, 
+  Gift, 
+  Calendar, 
+  HelpCircle, 
+  Sparkles, 
+  ShieldCheck, 
+  ArrowRight, 
+  Zap, 
+  X, 
+  Award,
+  RefreshCw,
+  Clock,
+  CreditCard,
+  Lock,
+  BadgePercent,
+  Check,
   ChevronDown,
   ChevronUp,
-  Check,
-  Smartphone,
-  MessageSquareQuote,
-  ShieldCheck,
-  Sparkles,
-  Clock,
-  ShoppingBag,
-  Utensils,
-  Film
+  Info,
+  Crown,
+  Ticket,
+  User,
+  Plus,
+  Compass
 } from 'lucide-react';
+import { MembershipSku } from '../types';
+import { MEMBERSHIP_SKUS } from '../data/membershipSkus';
 
 interface VipMemberCenterProps {
-  userStatus: SimUserStatus;
-  subscribedSkuId?: MembershipSkuId | null;
-  subscribedSkuIds?: MembershipSkuId[];
-  onBackToRecharge: () => void;
-  onOpenUnsubscribe?: () => void;
-  onOpenCheckout: (sku: MembershipSku) => void;
-  onGoToRenewalManagement?: () => void;
-  userPhone?: string;
-  onSelectSubscribedSku?: (skuId: MembershipSkuId) => void;
+  onOpenCheckout: (sku?: MembershipSku) => void;
+  onViewBenefitDetail?: (benefitId: string) => void;
+  onNavigateHome?: () => void;
+  onNavigateOrderDetail?: () => void;
+  onBackToRecharge?: () => void;
+  isMember?: boolean;
+  userStatus?: string;
+  subscribedSkuIds?: string[];
 }
 
 export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
-  userStatus,
-  subscribedSkuId = 'tier_0',
-  subscribedSkuIds,
-  onBackToRecharge,
-  onOpenUnsubscribe,
   onOpenCheckout,
-  onGoToRenewalManagement,
-  userPhone = '18518920637',
+  onNavigateHome,
+  onNavigateOrderDetail,
+  onBackToRecharge,
+  isMember: isMemberProp,
+  userStatus,
+  subscribedSkuIds,
 }) => {
-  const isMember = userStatus === 'active_member' || userStatus === 'pending_renewal';
-  
-  // 支持多款权益产品生效判定（兼容单值与多值）
-  const activeSkuIds: MembershipSkuId[] = useMemo(() => {
-    if (!isMember) return [];
-    if (subscribedSkuIds && subscribedSkuIds.length > 0) {
-      return subscribedSkuIds;
-    }
-    if (subscribedSkuId) {
-      return [subscribedSkuId];
-    }
-    return [];
-  }, [isMember, subscribedSkuIds, subscribedSkuId]);
+  const isMember = isMemberProp ?? (userStatus === 'active_member' || (subscribedSkuIds && subscribedSkuIds.length > 0));
+  const currentSku = MEMBERSHIP_SKUS[0]; // DXT通信充值会员
 
-  const activeSubscribedSkus = useMemo(() => {
-    return activeSkuIds.map(id => getSkuById(id)).filter(Boolean) as MembershipSku[];
-  }, [activeSkuIds]);
-
-  // 计算各生效权益产品的截止时间（模拟不同时期订购的不同到期日）
-  const getExpiryDateForSku = (skuId: MembershipSkuId, index: number) => {
-    const now = new Date();
-    const addedDays = 30 + (index % 4) * 7;
-    const expiry = new Date(now.getTime() + addedDays * 24 * 60 * 60 * 1000);
-    const year = expiry.getFullYear();
-    const month = String(expiry.getMonth() + 1).padStart(2, '0');
-    const day = String(expiry.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day} 23:59:59`;
-  };
-
-  // 当前选中的商品卡片（默认不高亮，用户点击哪个哪个高亮）
-  const [selectedSkuId, setSelectedSkuId] = useState<MembershipSkuId | null>(null);
-  // 单独记录展开全部权益明细的商品（仅通过卡片上的下拉小按钮触发）
-  const [expandedSkuMap, setExpandedSkuMap] = useState<Record<string, boolean>>({});
-  // 点击某个已生效权益卡片时，跳转至权益明细详情页 (截图2)
-  const [viewingDetailSku, setViewingDetailSku] = useState<{ sku: MembershipSku; expiryDateStr: string } | null>(null);
-
-  const toggleExpandSku = (skuId: MembershipSkuId, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedSkuMap(prev => ({ ...prev, [skuId]: !prev[skuId] }));
-  };
-
+  // Interactive States
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showRuleModal, setShowRuleModal] = useState<'notice' | 'business' | 'privacy' | 'strategy' | null>(null);
+
+  // Daily Sign-in State (连续签到3天领10元美团券，5天领20元美团券)
+  const [checkInDays, setCheckInDays] = useState<number>(isMember ? 2 : 0);
+  const [hasCheckedInToday, setHasCheckedInToday] = useState<boolean>(false);
+  const [claimedMeituan10, setClaimedMeituan10] = useState<boolean>(false);
+  const [claimedMeituan20, setClaimedMeituan20] = useState<boolean>(false);
+  const [showRewardModal, setShowRewardModal] = useState<{ title: string; desc: string; value: string; badge: string } | null>(null);
+
+  // Random 2-in-1 eCommerce Coupon State (前端展示随机2选1，后端基于新老客下发50元或99减5)
+  const [simulatedUserType, setSimulatedUserType] = useState<'new_user' | 'regular_user'>('new_user');
+  const [isRevealed, setIsRevealed] = useState<boolean>(isMember);
+  const [isSpinning, setIsSpinning] = useState<boolean>(false);
+
+  // 2元话费直减券领取状态
+  const [billCouponClaimed, setBillCouponClaimed] = useState<boolean>(isMember);
+
+  // FAQ Accordion Open State
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 2500);
   };
 
-  // 格式化手机号（脱敏显示，例如 185****0637）
-  const formatPhone = (phone: string) => {
-    if (!phone || phone.length < 11) return '185****0637';
-    return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+  // Sign-in Click Handler
+  const handleCheckIn = () => {
+    if (!isMember) {
+      showToast('请先开通DXT充值会员即可每日签到打卡！');
+      return;
+    }
+    if (hasCheckedInToday) {
+      showToast('今日已完成打卡，明天记得继续来打卡领券哦~');
+      return;
+    }
+    const newDays = checkInDays + 1;
+    setCheckInDays(newDays);
+    setHasCheckedInToday(true);
+
+    if (newDays === 3) {
+      showToast('🎉 恭喜已连续签到满3天！可免费领取10元美团生活券');
+    } else if (newDays >= 5) {
+      showToast('🔥 恭喜已连续签到满5天！可免费领取20元美团生活券');
+    } else {
+      showToast(`打卡成功！已连续打卡 ${newDays} 天，继续保持！`);
+    }
   };
 
-  const displayPhone = formatPhone(userPhone);
+  // Claim Meituan Reward
+  const handleClaimMeituan = (tier: 10 | 20) => {
+    if (!isMember) {
+      showToast('请开通会员后参与签到领券');
+      return;
+    }
+    if (tier === 10) {
+      if (checkInDays < 3) {
+        showToast(`还需连续签到 ${3 - checkInDays} 天即可领取10元美团生活券`);
+        return;
+      }
+      if (claimedMeituan10) {
+        showToast('您已成功领取10元美团生活券');
+        return;
+      }
+      setClaimedMeituan10(true);
+      setShowRewardModal({
+        badge: '生活优惠券',
+        title: '美团生活券 10元 已发放',
+        desc: '已成功存入美团卡券包，外卖、美食餐饮到店无门槛立减！',
+        value: '¥10.00'
+      });
+    } else if (tier === 20) {
+      if (checkInDays < 5) {
+        showToast(`还需连续签到 ${5 - checkInDays} 天即可领取20元美团生活券`);
+        return;
+      }
+      if (claimedMeituan20) {
+        showToast('您已成功领取20元美团生活券');
+        return;
+      }
+      setClaimedMeituan20(true);
+      setShowRewardModal({
+        badge: '超值大额券',
+        title: '美团生活券 20元 已发放',
+        desc: '已成功存入美团卡券包，实付满30元立减20元，休闲娱乐畅快抵扣！',
+        value: '¥20.00'
+      });
+    }
+  };
 
-  // 若处于查看具体权益明细页，展示详情页组件（对应截图2）
-  if (viewingDetailSku) {
-    return (
-      <BenefitDetailPage
-        sku={viewingDetailSku.sku}
-        expiryDateStr={viewingDetailSku.expiryDateStr}
-        userPhone={userPhone}
-        onBack={() => setViewingDetailSku(null)}
-      />
-    );
-  }
+  // Reveal eCommerce coupon based on backend user identity check
+  const handleRevealCoupon = () => {
+    if (isRevealed) {
+      showToast('神券已发放至绑定的抖音商城账户，可直接使用！');
+      return;
+    }
+    if (isSpinning) return;
+    setIsSpinning(true);
+    setTimeout(() => {
+      setIsSpinning(false);
+      setIsRevealed(true);
+      if (simulatedUserType === 'new_user') {
+        setShowRewardModal({
+          badge: '新客专属礼遇',
+          title: '获得 50元 抖音电商新人券！',
+          desc: '经系统后端识别，您的账号为抖音电商新客，已为您匹配最高50元新人专属神券！已自动存入绑定的抖音商城账户。',
+          value: '¥50.00'
+        });
+      } else {
+        setShowRewardModal({
+          badge: '商城专享礼遇',
+          title: '获得 满99减5 抖音电商专享券！',
+          desc: '经系统后端识别，已为您匹配全品类通用的满99减5元电商专享券！已自动存入抖音商城卡券包。',
+          value: '¥5.00'
+        });
+      }
+    }, 400);
+  };
 
   return (
-    <div className="bg-[#F2F4F7] text-slate-900 min-h-full flex flex-col justify-between font-sans select-none relative animate-fadeIn pb-10">
-      <div>
-        {/* ========================================================= */}
-        {/* 顶部导航栏 (复刻截图：Logo + 动信通权益小程序 + 反馈 + ••• ✕) */}
-        {/* ========================================================= */}
-        <div className="bg-white px-3 py-2.5 flex items-center justify-between sticky top-0 z-30 border-b border-slate-200/60 shadow-2xs">
-          {/* 左侧：返回箭头 + 圆形动信通 Logo + 标题 */}
-          <div className="flex items-center space-x-1.5">
-            <button 
-              onClick={onBackToRecharge}
-              className="p-1 -ml-1 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-              title="返回充值首页"
-            >
-              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-            </button>
-            
-            {/* 动信通专属圆形 Logo */}
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#1E6FD9] via-[#0088FF] to-[#6BC5FF] p-0.5 flex items-center justify-center shadow-xs shrink-0">
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                <Smartphone className="w-3.5 h-3.5 text-[#007AFF] stroke-[2.5]" />
+    <div className="min-h-full bg-[#F4F6FA] text-slate-900 font-sans pb-36 relative select-none">
+      
+      {/* ========================================================= */}
+      {/* 1. 顶部白底清爽导航栏 (小程序名字: 通信服务中心) */}
+      {/* ========================================================= */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 py-3 flex items-center justify-between text-slate-900 border-b border-slate-100 shadow-xs">
+        <button 
+          onClick={onNavigateHome || onBackToRecharge}
+          className="p-1 -ml-1 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors flex items-center space-x-1"
+          aria-label="返回充值中心"
+        >
+          <ChevronLeft className="w-5 h-5" />
+          <span className="text-xs font-semibold">返回</span>
+        </button>
+
+        {/* 顶部标题：严格指定为「通信服务中心」 */}
+        <div className="flex items-center space-x-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#FF9800]"></span>
+          <h1 className="text-base font-black tracking-wide text-slate-900">
+            通信服务中心
+          </h1>
+        </div>
+
+        {/* 右侧占位保持标题居中 */}
+        <div className="w-12"></div>
+      </header>
+
+      {/* ========================================================= */}
+      {/* 核心 Hero 会员主视觉区（完全对齐截图的双卡片+并列布局） */}
+      {/* 色系沿用现在的暖黄/奶金/暖橙色系，无支付宝/移动元素 */}
+      {/* ========================================================= */}
+      {/* ========================================================= */}
+      {/* 核心 Hero 会员主视觉区（完全对齐截图 17d590376affee0e8c0e5aba998e7bc1_5681daad.png） */}
+      {/* 暖金朝霞海报背景 + 3D金币与星光 + 双白底立减券 + 专属勋章与燕尾飘带 + 弧形缎带底托 + 核心开通CTA */}
+      {/* ========================================================= */}
+      <div className="bg-gradient-to-b from-[#FED8B1] via-[#FFE6CE] to-[#FFF5EB] px-4 pt-5 pb-5 relative overflow-hidden border-b border-[#FEE7D0]">
+        
+        {/* 背景装饰：左侧 ¥ 金币与星光 */}
+        <div className="absolute top-3 left-3 w-10 h-10 pointer-events-none drop-shadow-[0_4px_8px_rgba(217,119,6,0.3)] -rotate-12 z-0">
+          <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
+            <defs>
+              <radialGradient id="goldCoinGradLeft" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stopColor="#FFF4D0" />
+                <stop offset="40%" stopColor="#FFC83B" />
+                <stop offset="85%" stopColor="#E68A00" />
+                <stop offset="100%" stopColor="#B36200" />
+              </radialGradient>
+              <linearGradient id="goldRimLeft" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FFF8E0" />
+                <stop offset="50%" stopColor="#FFC83B" />
+                <stop offset="100%" stopColor="#B36200" />
+              </linearGradient>
+            </defs>
+            <circle cx="24" cy="24" r="22" fill="url(#goldCoinGradLeft)" stroke="url(#goldRimLeft)" strokeWidth="2.5" />
+            <circle cx="24" cy="24" r="17" fill="none" stroke="#FFD875" strokeWidth="1.2" opacity="0.8" />
+            <text x="24" y="30" textAnchor="middle" fill="#8A4000" fontSize="18" fontWeight="900" fontFamily="system-ui, sans-serif">¥</text>
+            <path d="M12 18 C14 12, 20 8, 28 8" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+          </svg>
+        </div>
+        {/* 左侧星光与红宝石小圆点 */}
+        <div className="absolute top-14 left-4 w-3.5 h-3.5 text-amber-500/80 pointer-events-none animate-pulse z-0">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" />
+          </svg>
+        </div>
+        <div className="absolute top-9 left-13 w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#FFE082] to-[#FFA000] shadow-xs pointer-events-none z-0"></div>
+
+        {/* 背景装饰：右侧 ♫ 抖音音符金币与星光 */}
+        <div className="absolute top-3 right-3 w-10 h-10 pointer-events-none drop-shadow-[0_4px_8px_rgba(217,119,6,0.3)] rotate-12 z-0">
+          <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
+            <defs>
+              <radialGradient id="goldCoinGradRight" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stopColor="#FFF4D0" />
+                <stop offset="40%" stopColor="#FFC83B" />
+                <stop offset="85%" stopColor="#E68A00" />
+                <stop offset="100%" stopColor="#B36200" />
+              </radialGradient>
+              <linearGradient id="goldRimRight" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FFF8E0" />
+                <stop offset="50%" stopColor="#FFC83B" />
+                <stop offset="100%" stopColor="#B36200" />
+              </linearGradient>
+            </defs>
+            <circle cx="24" cy="24" r="22" fill="url(#goldCoinGradRight)" stroke="url(#goldRimRight)" strokeWidth="2.5" />
+            <circle cx="24" cy="24" r="17" fill="none" stroke="#FFD875" strokeWidth="1.2" opacity="0.8" />
+            <path d="M21 27.5C21 29.4 19.4 31 17.5 31C15.6 31 14 29.4 14 27.5C14 25.6 15.6 24 17.5 24C18.3 24 19 24.3 19.6 24.8V17.5C19.6 16.7 20.2 16 21 16H28C28.8 16 29.5 16.7 29.5 17.5V21C29.5 21.8 28.8 22.5 28 22.5H22.5V25.7C22.1 25.2 21.6 25 21 25V27.5Z" fill="#8A4000" />
+            <path d="M12 18 C14 12, 20 8, 28 8" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+          </svg>
+        </div>
+        {/* 右侧星光与流光 */}
+        <div className="absolute top-12 right-13 w-4 h-4 text-amber-400/90 pointer-events-none animate-pulse z-0">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" />
+          </svg>
+        </div>
+        <div className="absolute top-19 right-4 w-2.5 h-2.5 text-amber-400/70 pointer-events-none z-0">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" />
+          </svg>
+        </div>
+
+        {/* 顶部标题与副标题区 */}
+        <div className="text-center relative z-10 mb-3.5">
+          <div className="flex items-center justify-center">
+            <h2 className="text-2xl sm:text-[28px] font-black tracking-tight text-[#9E3900] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
+              DXT通信充值会员
+            </h2>
+            {/* 右上角金色发光星钻徽章 */}
+            <div className="ml-1.5 -mt-3.5 relative">
+              <div className="w-5 h-5 rounded-[4px] rotate-45 bg-gradient-to-br from-[#FFF8D6] via-[#FFD24D] to-[#FF9E00] shadow-[0_0_10px_rgba(255,180,30,0.7)] flex items-center justify-center border border-white">
+                <div className="w-2.5 h-2.5 rounded-[2px] bg-white opacity-90"></div>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs sm:text-[13px] font-bold text-[#7E3700] tracking-tight mt-1">
+            充值会员享特权 | 连续包月更省钱
+          </p>
+        </div>
+
+        {/* 核心霸屏横向券卡片组（参考截图2：月卡专属消费券，大尺寸无杂色券面） */}
+        <div className="relative z-10">
+          {/* 霸屏双券垂直堆叠，宽大通透，高质感 */}
+          <div className="space-y-2.5">
+            {/* 券1：2元话费直减券（霸屏横向大券） */}
+            <div className="w-full max-w-full bg-white rounded-2xl border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
+              {/* 左侧券主体 */}
+              <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
+                <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-2.5 border-r border-amber-100/90 w-[68px] sm:w-[74px]">
+                  <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5 leading-none">
+                    每月必得
+                  </span>
+                  <div className="flex items-baseline">
+                    <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">2</span>
+                    <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                  </div>
+                </div>
+                <div className="pl-2.5 sm:pl-3 flex-1 min-w-0">
+                  <div className="text-xs sm:text-[13.5px] font-black text-slate-900 truncate">
+                    话费直减现金券
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
+                    充值自动立减 · 三网通用
+                  </div>
+                </div>
+              </div>
+
+              {/* 中间上下打孔凹槽与垂直虚线 */}
+              <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
+                <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
+                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
+              </div>
+
+              {/* 右侧金色领券区（白底药丸按钮） */}
+              <div 
+                onClick={() => onOpenCheckout(currentSku)}
+                className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center cursor-pointer active:brightness-95 transition-all"
+              >
+                <div className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-transform text-center truncate">
+                  立即领取
+                </div>
               </div>
             </div>
 
-            <span className="font-extrabold text-[15px] tracking-tight text-slate-900">
-              动信通权益小程序
-            </span>
+            {/* 券2：抖音电商神券（前端单券展示，最高50元，最低5元） */}
+            <div className={`w-full max-w-full bg-white rounded-2xl border-2 ${
+              isRevealed ? 'border-[#FF9800] ring-2 ring-amber-300/70 shadow-md' : 'border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)]'
+            } overflow-hidden flex items-stretch relative transition-all`}>
+              {/* 左侧券主体 */}
+              <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
+                <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-2.5 border-r border-amber-100/90 w-[68px] sm:w-[74px]">
+                  <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5 leading-none">
+                    {isRevealed ? (simulatedUserType === 'new_user' ? '新客礼遇' : '商城专享') : '最高50元'}
+                  </span>
+                  <div className="flex items-baseline">
+                    {isRevealed ? (
+                      simulatedUserType === 'new_user' ? (
+                        <>
+                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">最高</span>
+                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">50</span>
+                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">满99减</span>
+                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">5</span>
+                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <span className="text-xl sm:text-2xl font-black italic tracking-tighter text-[#B45309]">5~50</span>
+                        <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="pl-2.5 sm:pl-3 flex-1 min-w-0">
+                  <div className="text-xs sm:text-[13.5px] font-black text-slate-900 truncate">
+                    {isRevealed 
+                      ? (simulatedUserType === 'new_user' ? '抖音电商新人神券' : '抖音电商专享券') 
+                      : '抖音电商专享神券'}
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
+                    {isRevealed
+                      ? '已自动匹配存入绑定的抖音账号'
+                      : '最高可领50元 · 最低5元 · 自动发放'}
+                  </div>
+                </div>
+              </div>
+
+              {/* 中间上下打孔凹槽与垂直虚线 */}
+              <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
+                <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
+                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
+              </div>
+
+              {/* 右侧金色领券区（白底药丸按钮） */}
+              <div 
+                onClick={handleRevealCoupon}
+                className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center cursor-pointer active:brightness-95 transition-all"
+              >
+                <div className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-transform text-center truncate">
+                  {isRevealed ? '立即使用' : '立即领取'}
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* 右侧：反馈胶囊按钮 + 小程序标准胶囊按钮 (••• ✕) */}
-          <div className="flex items-center space-x-1.5">
-            <button
-              onClick={() => setShowFeedbackModal(true)}
-              className="bg-[#F2F4F7] hover:bg-slate-200 active:scale-95 text-slate-700 text-xs px-2.5 py-1 rounded-full font-medium transition-all"
-            >
-              反馈
-            </button>
+        {/* 核心大尺寸开通 CTA 按钮（唯一保留鲜明红橙色调的高转化支付按钮） */}
+        <div className="mt-4 relative z-10">
+          <button
+            onClick={() => onOpenCheckout(currentSku)}
+            className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] hover:brightness-105 active:scale-[0.98] transition-all text-white py-3.5 px-5 rounded-full shadow-[0_8px_25px_rgba(255,40,75,0.38)] flex flex-col items-center justify-center cursor-pointer"
+          >
+            <div className="text-[15px] font-black tracking-wide">
+              首月仅0.01元 次月起1.99元/月
+            </div>
+            <div className="text-xs text-white/95 font-medium mt-0.5">
+              连续包月 随时可退
+            </div>
+          </button>
 
-            {/* 小程序经典胶囊控件 */}
-            <div className="bg-white border border-slate-200 rounded-full px-2 py-1 flex items-center space-x-2 shadow-2xs text-slate-800">
-              <button 
-                onClick={() => showToast('小程序功能已就绪')}
-                className="hover:text-black font-extrabold tracking-widest text-xs scale-90"
-              >
-                •••
+          {/* 协议与须知细则链接（改用温润暖金褐色，不与红色支付按钮竞争注意力） */}
+          <div className="mt-3 text-center text-[10.5px] text-[#8C6246]">
+            <div>按自然月计费，开通前请阅读</div>
+            <div className="inline-flex space-x-1.5 text-[#8C531B] mt-1 font-medium">
+              <button onClick={() => setShowRuleModal('notice')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
+                《会员使用须知》
               </button>
-              <span className="w-[1px] h-3 bg-slate-200" />
-              <button 
-                onClick={onBackToRecharge}
-                className="hover:text-black text-xs font-bold"
-              >
-                ✕
+              <button onClick={() => setShowRuleModal('business')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
+                《业务说明》
+              </button>
+              <button onClick={() => setShowRuleModal('privacy')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
+                《隐私政策》
               </button>
             </div>
           </div>
         </div>
 
-        <div className="p-3.5 space-y-4">
+      </div>
 
-          {/* ========================================================= */}
-          {/* 【上部】用户已开通的会员与权益，并展示手机号码 */}
-          {/* ========================================================= */}
-          <div className="space-y-3">
-            {/* 用户账号与会员状态条卡片 */}
-            <div className="bg-white rounded-2xl p-3.5 shadow-2xs border border-slate-100/90 flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-full bg-blue-50 text-[#0066CC] flex items-center justify-center shrink-0 border border-blue-100">
-                  <Smartphone className="w-4 h-4 stroke-[2.2]" />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-[11px] font-bold text-slate-400">服务手机号</span>
-                    <span className="text-xs font-black text-slate-800 tracking-wide">{displayPhone}</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 font-medium">
-                    {isMember ? '权益每月自动发放至此账号' : '开通会员后权益自动下发至此手机号'}
-                  </div>
-                </div>
-              </div>
-
-              {/* 右侧会员状态标 */}
-              <div>
-                {isMember && activeSubscribedSkus.length > 0 ? (
-                  <span className="bg-[#E6F8F0] text-[#00B578] text-xs font-black px-2.5 py-1 rounded-full flex items-center space-x-1 border border-emerald-200/50 shadow-2xs">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00B578] animate-pulse" />
-                    <span>
-                      权益生效中{activeSubscribedSkus.length > 1 ? ` · 共${activeSubscribedSkus.length}款` : ''}
-                    </span>
-                  </span>
-                ) : (
-                  <span className="bg-slate-100 text-slate-500 text-xs font-bold px-2.5 py-1 rounded-full">
-                    未开通会员
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* 如果已开通会员：展示当前生效期内的权益商品名称与生效截止时间（支持1个、2个、3个等多款商品，点击进入权益明细） */}
-            {isMember && activeSubscribedSkus.length > 0 && (
-              <div className="space-y-2">
-                {activeSubscribedSkus.map((sku, idx) => {
-                  const expiry = getExpiryDateForSku(sku.id, idx);
-                  return (
-                    <div 
-                      key={sku.id}
-                      onClick={() => setViewingDetailSku({ sku, expiryDateStr: expiry })}
-                      className="bg-white rounded-2xl p-3.5 shadow-2xs border border-slate-100/90 hover:border-emerald-200/90 active:scale-[0.99] flex items-center justify-between cursor-pointer transition-all group"
-                      title="点击查看具体权益明细"
-                    >
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-black text-slate-900 truncate group-hover:text-emerald-700 transition-colors">
-                            {sku.name}
-                          </span>
-                          <span className="bg-[#E6F8F0] text-[#00B578] text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-0.5 shrink-0">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                            <span>已生效</span>
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 flex items-center space-x-1 font-medium">
-                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span>生效截止时间：{expiry}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-0.5 text-slate-400 group-hover:text-emerald-600 transition-colors shrink-0 ml-2 pl-1">
-                        <ChevronRight className="w-4 h-4 stroke-[2.5]" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* ========================================================= */}
-          {/* 【中部】商品列表 (抖音店铺 SKU 挂钩商品 List，动态渲染) */}
-          {/* ========================================================= */}
-          <div className="space-y-3 pt-1">
-            <div className="flex items-center justify-between px-1">
-              <div>
-                <h3 className="text-sm font-black text-slate-900 flex items-center space-x-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  <span>权益套餐列表</span>
-                </h3>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  官方保障 · 随时可退
-                </p>
-              </div>
-              <span className="text-[11px] text-slate-400 font-medium">共 {MEMBERSHIP_SKUS.length} 款套餐</span>
-            </div>
-
-            {/* 动态遍历商品列表 (极简设计，紧凑优雅，一屏尽览) */}
-            <div className="space-y-2.5">
-              {MEMBERSHIP_SKUS.map((sku) => {
-                const isSelected = selectedSkuId === sku.id;
-                const isExpanded = Boolean(expandedSkuMap[sku.id]);
-                
-                // 完整权益数据映射（全量文字）
-                const allBenefitRows = 
-                  sku.id === 'tier_0' ? [
-                    { label: '话费直减', desc: '每月充值自动抵扣 2.00元（满30元可用，无门槛直减）' },
-                    { label: '电商特权', desc: '每月赠送 2.00元 抖音商城全场通用券' },
-                    { label: '安心保障', desc: '扣款前5天消息盒子提醒，端内随时可一键退订' },
-                  ] :
-                  sku.id === 'tier_1' ? [
-                    { label: '电商特权', desc: '每月赠送 10.00元 抖音商城通用券包（多张立减）' },
-                    { label: '美团神券', desc: '每月享 50.00元 美团外卖与神券红包组合' },
-                    { label: '生活特权', desc: '涵盖电影打折、打车券等多种月度生活特权' },
-                  ] :
-                  sku.id === 'tier_2' ? [
-                    { label: '电商特权', desc: '每月赠送 13.00元 抖音商城专享购物立减券' },
-                    { label: '短剧畅看', desc: '赠送 20.00元 抖音短剧双周VIP免广告畅看权益' },
-                    { label: '娱乐礼包', desc: '每月享 60.00元 美团及休闲娱乐专属抵扣券包' },
-                  ] : [
-                    { label: '电商特权', desc: '每月赠送 20.00元 抖音商城全品类大额购物券' },
-                    { label: '短剧月卡', desc: '短剧整月无限次免费免广告畅看全场热剧' },
-                    { label: '餐饮红包', desc: '每月高额美团外卖及到店餐饮现金红包' },
-                  ];
-
-                // 折叠时展示前2条，点击下拉按钮展开时展示全部条目
-                const displayedBenefits = isExpanded ? allBenefitRows : allBenefitRows.slice(0, 2);
-
-                const monthlySave = 
-                  sku.id === 'tier_0' ? '省4元' :
-                  sku.id === 'tier_1' ? '省52元' :
-                  sku.id === 'tier_2' ? '省74元' : '省99元';
-
-                return (
-                  <div 
-                    key={sku.id}
-                    onClick={() => setSelectedSkuId(sku.id)}
-                    className={`rounded-2xl p-3.5 border cursor-pointer transition-all duration-200 active:scale-[0.99] space-y-2.5 ${
-                      isSelected 
-                        ? 'bg-gradient-to-r from-[#FFF9F3] via-[#FFF5ED] to-[#FFF1EC] border-amber-400 ring-2 ring-amber-400/40 shadow-sm shadow-amber-500/10' 
-                        : 'bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs'
-                    }`}
-                  >
-                    {/* 第一行：左侧 Logo + 商品标题与卖点；右侧 价格 + 连续包月 + 省钱标签 */}
-                    <div className="flex items-center justify-between gap-2.5">
-                      {/* 左侧：Logo + 标题与副标 */}
-                      <div className="flex items-center space-x-2.5 min-w-0 flex-1">
-                        {/* 商品专属精美 Logo */}
-                        <SkuProductLogo skuId={sku.id} size="md" />
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center space-x-1.5">
-                            <span className="text-[13.5px] font-black text-slate-900 tracking-tight truncate">
-                              {sku.name}
-                            </span>
-                            {sku.badge && (
-                              <span className={`text-[9.5px] font-black px-1.5 py-0.5 rounded leading-none shrink-0 ${
-                                sku.id === 'tier_0'
-                                  ? 'bg-rose-50 text-[#FE2C55] border border-rose-200/60' 
-                                  : sku.id === 'tier_3'
-                                  ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
-                                  : 'bg-slate-100 text-slate-600'
-                              }`}>
-                                {sku.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
-                            {sku.highlight}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* 右侧：价格模块 */}
-                      <div className="flex flex-col items-end shrink-0">
-                        <div className="flex items-baseline space-x-0.5">
-                          <span className="text-xs font-bold text-[#FE2C55]">¥</span>
-                          <span className="text-base font-black text-[#FE2C55] tracking-tight leading-none">
-                            {sku.price.toFixed(2).replace(/\.00$/, '')}
-                          </span>
-                          <span className="text-[11px] font-bold text-[#FE2C55]">/月</span>
-                        </div>
-                        <div className="flex items-center space-x-1 mt-1">
-                          <span className="text-[10px] text-slate-500 font-medium bg-slate-100/90 px-1 py-0.2 rounded leading-tight">
-                            连续包月
-                          </span>
-                          <span className="bg-[#FFE8E8] text-[#FE2C55] font-black text-[10px] px-1.5 py-0.2 rounded leading-tight shrink-0">
-                            {monthlySave}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 第二行：权益明细项：精美图标 + 权益标签 + 权益说明 */}
-                    <div className="space-y-1.5 pt-2 border-t border-slate-100/90">
-                      {displayedBenefits.map((row, idx) => {
-                        // 根据权益类别匹配图标
-                        const BenefitIcon = 
-                          row.label.includes('话费') ? Smartphone :
-                          row.label.includes('电商') ? ShoppingBag :
-                          row.label.includes('美团') || row.label.includes('餐饮') ? Utensils :
-                          row.label.includes('短剧') ? Film :
-                          ShieldCheck;
-
-                        const iconColor =
-                          row.label.includes('话费') ? 'text-rose-500 bg-rose-50' :
-                          row.label.includes('电商') ? 'text-amber-600 bg-amber-50' :
-                          row.label.includes('美团') || row.label.includes('餐饮') ? 'text-orange-500 bg-orange-50' :
-                          row.label.includes('短剧') ? 'text-purple-600 bg-purple-50' :
-                          'text-emerald-600 bg-emerald-50';
-
-                        return (
-                          <div 
-                            key={idx} 
-                            className="flex items-start space-x-2 text-[11px] leading-snug"
-                          >
-                            <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${iconColor}`}>
-                              <BenefitIcon className="w-2.5 h-2.5" />
-                            </div>
-                            <div className={`min-w-0 flex-1 ${
-                              isExpanded ? 'whitespace-normal break-words' : 'truncate'
-                            }`}>
-                              <span className="font-bold text-slate-800">{row.label}：</span>
-                              <span className="text-slate-600">{row.desc}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* 第三行：底部操作行：查看全部权益明细小按钮 + 立即开通 CTA 按钮 */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100/80">
-                      <button
-                        type="button"
-                        onClick={(e) => toggleExpandSku(sku.id, e)}
-                        className="inline-flex items-center space-x-1 text-[10px] text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/80 px-2 py-0.5 rounded-full transition-colors font-medium select-none active:scale-95 border border-slate-200/50"
-                      >
-                        <span>{isExpanded ? '收起权益明细' : '查看全部权益明细'}</span>
-                        {isExpanded ? (
-                          <ChevronUp className="w-3 h-3 text-slate-500" />
-                        ) : (
-                          <ChevronDown className="w-3 h-3 text-slate-500" />
-                        )}
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedSkuId(sku.id);
-                          onOpenCheckout(sku);
-                        }}
-                        className="h-7 px-3.5 rounded-full text-[11px] font-black text-white active:scale-95 shadow-xs transition-all bg-gradient-to-r from-[#FF5E1E] to-[#FE2C55] hover:brightness-105 flex items-center space-x-1"
-                      >
-                        <span>立即开通</span>
-                        <ChevronRight className="w-3 h-3 -mr-0.5" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ========================================================= */}
-          {/* 【下部】常见问题 (复刻截图纯白大圆角 FAQ 卡片) */}
-          {/* ========================================================= */}
-          <div className="bg-white rounded-2xl p-4 shadow-2xs border border-slate-100/90 space-y-3.5">
-            {/* 标题 */}
-            <div className="flex items-center space-x-1.5">
-              <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center text-white text-[10px] font-black shrink-0">
-                ?
-              </div>
-              <h3 className="font-extrabold text-sm text-slate-900">
-                常见问题
-              </h3>
-            </div>
-
-            {/* Q1 & A1 */}
-            <div className="space-y-1">
-              <div className="text-xs font-extrabold text-slate-900">
-                Q: 2元话费券如何使用？
-              </div>
-              <div className="text-xs text-slate-500 leading-relaxed">
-                A: 会员领取后，在充值中心为绑定手机号充值时系统将自动抵扣。
-              </div>
-            </div>
-
-            {/* Q2 & A2 */}
-            <div className="space-y-1 pt-1 border-t border-slate-100">
-              <div className="text-xs font-extrabold text-slate-900">
-                Q: 如何取消连续包月自动续费？
-              </div>
-              <div className="text-xs text-slate-500 leading-relaxed">
-                A: 在「抖音钱包-支付设置-自动扣款管理」中一键解绑，当月已发放权益继续有效。
-              </div>
-            </div>
-
-            {/* Q3 & A3 */}
-            <div className="space-y-1 pt-1 border-t border-slate-100">
-              <div className="text-xs font-extrabold text-slate-900">
-                Q: 权益没有到账怎么办？
-              </div>
-              <div className="text-xs text-slate-500 leading-relaxed">
-                A: 系统在开通支付完成后5分钟内自动下发，如遇高峰网络延迟可退出重新打开或联系客服。
-              </div>
-            </div>
-          </div>
-
+      {/* ========================================================= */}
+      {/* 4. 居中段落分割标题（参考截图：—— 开通后可得会员服务 ——） */}
+      {/* ========================================================= */}
+      <div className="px-4 my-5">
+        <div className="flex items-center justify-center space-x-3">
+          <div className="h-px bg-gradient-to-r from-transparent via-amber-300 to-amber-400 w-16"></div>
+          <h3 className="text-sm font-black text-slate-800 tracking-wider">
+            开通后可得会员服务
+          </h3>
+          <div className="h-px bg-gradient-to-l from-transparent via-amber-300 to-amber-400 w-16"></div>
         </div>
       </div>
 
-      {/* Toast Notification */}
+      {/* ========================================================= */}
+      {/* 5. 模块化权益卡片组（完全对齐截图的 【权益1】/【权益2】/【权益3】顶部小标贴结构） */}
+      {/* ========================================================= */}
+      <div className="px-4 space-y-4">
+
+        {/* --------------------------------------------------------- */}
+        {/* 【权益1】做任务每月必得 2元话费直减券 */}
+        {/* (完全复刻截图权益1顶部蓝色/暖色角标 + 主卡片 + 5个横向小方块结构) */}
+        {/* --------------------------------------------------------- */}
+        {/* --------------------------------------------------------- */}
+        {/* 【权益1】做任务每月必得 2元话费直减券 */}
+        {/* (样式与上部优惠券100%保持一致的霸屏大券样式) */}
+        {/* --------------------------------------------------------- */}
+        <div className="bg-white rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-100 relative pt-10 sm:pt-11 overflow-hidden">
+          {/* 左上角贴纸角标（暖金色系） */}
+          <div className="absolute top-0 left-4 bg-gradient-to-r from-[#FF9800] to-[#D97706] text-white text-[10.5px] font-black px-3 py-1 rounded-b-xl shadow-xs flex items-center space-x-1 z-10">
+            <span className="bg-white text-[#B45309] text-[9px] px-1 py-0.2 rounded font-black mr-1">
+              权益1
+            </span>
+            <span>话费直减每月必得</span>
+          </div>
+
+          {/* 优惠券主体：严格复刻上部霸屏券设计规范 */}
+          <div className="w-full bg-white rounded-2xl border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
+            {/* 左侧券主体 */}
+            <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
+              <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-3 border-r border-amber-100/90 min-w-[62px] sm:min-w-[68px]">
+                <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5">
+                  每月必得
+                </span>
+                <div className="flex items-baseline">
+                  <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">2</span>
+                  <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                </div>
+              </div>
+              <div className="pl-2 sm:pl-3 flex-1 min-w-0">
+                <div className="text-xs sm:text-[13px] font-black text-slate-900 truncate">
+                  话费直减现金券
+                </div>
+                <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
+                  充值自动立减 · 三网通用
+                </div>
+              </div>
+            </div>
+
+            {/* 中间上下打孔凹槽与垂直虚线 */}
+            <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+              <div className="w-3 h-3 rounded-full bg-white border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
+              <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
+              <div className="w-3 h-3 rounded-full bg-white border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
+            </div>
+
+            {/* 右侧领券/使用按钮 */}
+            <div className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center">
+              <button
+                onClick={() => {
+                  if (isMember) {
+                    setBillCouponClaimed(true);
+                    showToast('已享受话费直减优惠，立即去充值！');
+                    if (onNavigateOrderDetail) onNavigateOrderDetail();
+                  } else {
+                    onOpenCheckout(currentSku);
+                  }
+                }}
+                className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-1 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate"
+              >
+                {isMember ? (billCouponClaimed ? '立即使用' : '立即领取') : '立即领取'}
+              </button>
+            </div>
+          </div>
+
+          {/* 横向5个迷你权益小卡片（数字高亮转为金褐色，无非按钮红色） */}
+          <div className="grid grid-cols-5 gap-1.5 mt-3 pt-1 text-center">
+            <div className="bg-amber-50/40 border border-amber-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
+              <span className="text-xs font-black text-[#B45309]">立减2元</span>
+              <span className="text-[9px] text-slate-500 mt-0.5">充值直减</span>
+            </div>
+            <div className="bg-amber-50/40 border border-amber-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
+              <span className="text-xs font-black text-amber-700">自动抵扣</span>
+              <span className="text-[9px] text-slate-500 mt-0.5">无门槛减</span>
+            </div>
+            <div className="bg-slate-50/90 border border-slate-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
+              <span className="text-xs font-black text-slate-800">全网通用</span>
+              <span className="text-[9px] text-slate-500 mt-0.5">三网支持</span>
+            </div>
+            <div className="bg-slate-50/90 border border-slate-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
+              <span className="text-xs font-black text-slate-800">每月发放</span>
+              <span className="text-[9px] text-slate-500 mt-0.5">次月自动到</span>
+            </div>
+            <div className="bg-slate-50/90 border border-slate-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
+              <span className="text-xs font-black text-slate-800">安全合规</span>
+              <span className="text-[9px] text-slate-500 mt-0.5">动信通直发</span>
+            </div>
+          </div>
+
+          {/* 卡片底部说明小字 */}
+          <div className="mt-2 text-center text-[10px] text-slate-400">
+            每月自动发放到账，充值话费时系统将优先抵扣2元现金
+          </div>
+        </div>
+
+        {/* --------------------------------------------------------- */}
+        {/* 【权益2】活动福利月月享 抖音电商神券 */}
+        {/* (前端对用户展示单个券样式，提示最高50元最低5元，点击后根据后端逻辑变成实际发给用户的券) */}
+        {/* --------------------------------------------------------- */}
+        <div className="bg-white rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-100 relative pt-10 sm:pt-11 overflow-hidden">
+          {/* 左上角贴纸角标 */}
+          <div className="absolute top-0 left-4 bg-gradient-to-r from-[#FF9800] to-[#D97706] text-white text-[10.5px] font-black px-3 py-1 rounded-b-xl shadow-xs flex items-center space-x-1 z-10">
+            <span className="bg-white text-[#B45309] text-[9px] px-1 py-0.2 rounded font-black mr-1">
+              权益2
+            </span>
+            <span>活动福利月月享</span>
+          </div>
+
+          <div className="text-xs text-slate-500 mb-2.5 flex items-center justify-between gap-1 pt-0.5">
+            <span className="truncate">抖音电商专享神券（最高50元，最低5元）</span>
+            <span className="shrink-0 text-[10px] bg-amber-50 text-amber-800 font-bold px-1.5 py-0.5 rounded border border-amber-200/80">
+              高额补贴
+            </span>
+          </div>
+
+          {/* 前端展示单个券样式：告诉用户最高可以领取50元，最低是5元，点击后变成实际发放的券 */}
+          <div className="space-y-2.5">
+            {!isRevealed ? (
+              /* 未点击/未领取：单个券展示（最高50元，最低5元） */
+              <div className="w-full max-w-full bg-white rounded-2xl border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative transition-all">
+                <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
+                  <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-3 border-r border-amber-100/90 min-w-[68px] sm:min-w-[76px]">
+                    <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5">
+                      最高50元
+                    </span>
+                    <div className="flex items-baseline">
+                      <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">5~50</span>
+                      <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                    </div>
+                  </div>
+                  <div className="pl-2 sm:pl-3 flex-1 min-w-0">
+                    <div className="text-xs sm:text-[13px] font-black text-slate-900 truncate">
+                      抖音电商专享神券
+                    </div>
+                    <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
+                      最高可领50元 · 最低5元保底 · 自动发放
+                    </div>
+                  </div>
+                </div>
+
+                {/* 中间打孔凹槽 */}
+                <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+                  <div className="w-3 h-3 rounded-full bg-white border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
+                  <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
+                  <div className="w-3 h-3 rounded-full bg-white border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
+                </div>
+
+                {/* 右侧动作按钮区 */}
+                <div className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center">
+                  <button
+                    onClick={handleRevealCoupon}
+                    className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate"
+                  >
+                    立即领取
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* 点击后：根据后端身份识别，变成实际发放给用户的券 */
+              <div className="w-full max-w-full bg-white rounded-2xl border-2 border-[#FF9800] ring-2 ring-amber-300/70 shadow-md overflow-hidden flex items-stretch relative transition-all">
+                <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
+                  <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-3 border-r border-amber-100/90 min-w-[68px] sm:min-w-[76px]">
+                    <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5">
+                      {simulatedUserType === 'new_user' ? '新客礼遇' : '商城专享'}
+                    </span>
+                    <div className="flex items-baseline">
+                      {simulatedUserType === 'new_user' ? (
+                        <>
+                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">最高</span>
+                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">50</span>
+                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">满99减</span>
+                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">5</span>
+                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="pl-2 sm:pl-3 flex-1 min-w-0">
+                    <div className="text-xs sm:text-[13px] font-black text-slate-900 truncate">
+                      {simulatedUserType === 'new_user' ? '抖音电商新人神券' : '抖音电商专享券'}
+                    </div>
+                    <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
+                      已自动匹配并存入绑定的抖音账号
+                    </div>
+                  </div>
+                </div>
+
+                {/* 中间打孔凹槽 */}
+                <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+                  <div className="w-3 h-3 rounded-full bg-white border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
+                  <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
+                  <div className="w-3 h-3 rounded-full bg-white border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
+                </div>
+
+                {/* 右侧动作按钮区 */}
+                <div className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center">
+                  <button
+                    onClick={() => showToast('神券已在抖音商城卡券包生效，打开抖音APP即可使用！')}
+                    className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate"
+                  >
+                    立即使用
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* --------------------------------------------------------- */}
+        {/* 【权益3】超值签到打卡福利 美团生活券 */}
+        {/* --------------------------------------------------------- */}
+        <div className="bg-white rounded-3xl p-4.5 shadow-sm border border-slate-100 relative pt-10 sm:pt-11">
+          {/* 左上角贴纸角标 */}
+          <div className="absolute top-0 left-4 bg-gradient-to-r from-[#FF9800] to-[#D97706] text-white text-[10.5px] font-black px-3 py-1 rounded-b-xl shadow-xs flex items-center space-x-1 z-10">
+            <span className="bg-white text-[#B45309] text-[9px] px-1 py-0.2 rounded font-black mr-1">
+              权益3
+            </span>
+            <span>打卡福利免费领</span>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-slate-600 mb-3 pt-0.5">
+            <span>连续签到打卡，免费领取美团生活券</span>
+            <button
+              onClick={handleCheckIn}
+              className={`px-3 py-1 rounded-full text-xs font-black shadow-xs active:scale-95 transition-all ${
+                hasCheckedInToday
+                  ? 'bg-slate-100 text-slate-400'
+                  : 'bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white'
+              }`}
+            >
+              {hasCheckedInToday ? '今日已打卡' : '今日打卡 (+1天)'}
+            </button>
+          </div>
+
+          {/* 5天打卡里程碑进度格 */}
+          <div className="grid grid-cols-5 gap-1.5 text-center">
+            {/* 第1天 */}
+            <div className={`p-2 rounded-xl border text-center ${
+              checkInDays >= 1 ? 'bg-amber-50 border-amber-300 text-amber-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400'
+            }`}>
+              <div className="text-[10px]">第1天</div>
+              <div className="text-xs font-black my-0.5">{checkInDays >= 1 ? '✓' : '+1'}</div>
+              <div className="text-[9px]">打卡</div>
+            </div>
+
+            {/* 第2天 */}
+            <div className={`p-2 rounded-xl border text-center ${
+              checkInDays >= 2 ? 'bg-amber-50 border-amber-300 text-amber-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400'
+            }`}>
+              <div className="text-[10px]">第2天</div>
+              <div className="text-xs font-black my-0.5">{checkInDays >= 2 ? '✓' : '+1'}</div>
+              <div className="text-[9px]">打卡</div>
+            </div>
+
+            {/* 第3天里程碑: 10元券 */}
+            <div className={`p-2 rounded-xl border relative text-center overflow-hidden ${
+              checkInDays >= 3 ? 'bg-amber-50/80 border-[#FFA000] text-amber-950 font-bold' : 'bg-amber-50/30 border-amber-200'
+            }`}>
+              <span className="absolute top-0 right-0 bg-[#FF9800] text-white text-[8px] font-bold px-1 rounded-bl">
+                奖10元
+              </span>
+              <div className="text-[10px] font-bold text-amber-800">第3天</div>
+              <div className="text-xs font-black text-[#B45309] my-0.5">¥10</div>
+              <div className="text-[9px] text-amber-700 font-bold">美团券</div>
+            </div>
+
+            {/* 第4天 */}
+            <div className={`p-2 rounded-xl border text-center ${
+              checkInDays >= 4 ? 'bg-amber-50 border-amber-300 text-amber-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400'
+            }`}>
+              <div className="text-[10px]">第4天</div>
+              <div className="text-xs font-black my-0.5">{checkInDays >= 4 ? '✓' : '+1'}</div>
+              <div className="text-[9px]">打卡</div>
+            </div>
+
+            {/* 第5天里程碑: 20元券 */}
+            <div className={`p-2 rounded-xl border relative text-center overflow-hidden ${
+              checkInDays >= 5 ? 'bg-amber-50/90 border-[#FFA000] text-amber-950 font-bold' : 'bg-amber-50/30 border-amber-200'
+            }`}>
+              <span className="absolute top-0 right-0 bg-[#D97706] text-white text-[8px] font-bold px-1 rounded-bl">
+                大奖20
+              </span>
+              <div className="text-[10px] font-bold text-amber-800">第5天</div>
+              <div className="text-xs font-black text-[#B45309] my-0.5">¥20</div>
+              <div className="text-[9px] text-amber-700 font-bold">美团券</div>
+            </div>
+          </div>
+
+          {/* 领奖操作行 */}
+          <div className="mt-3 flex items-center justify-between text-xs pt-2.5 border-t border-slate-100">
+            <span className="text-slate-500">已连续打卡 <strong className="text-[#B45309] font-black">{checkInDays}</strong> 天</span>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleClaimMeituan(10)}
+                className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
+                  claimedMeituan10
+                    ? 'bg-slate-100 text-slate-400'
+                    : checkInDays >= 3
+                    ? 'bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white shadow-xs'
+                    : 'bg-amber-50 text-amber-800 border border-amber-200'
+                }`}
+              >
+                {claimedMeituan10 ? '10元已领' : '领10元券'}
+              </button>
+              <button
+                onClick={() => handleClaimMeituan(20)}
+                className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
+                  claimedMeituan20
+                    ? 'bg-slate-100 text-slate-400'
+                    : checkInDays >= 5
+                    ? 'bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white shadow-xs'
+                    : 'bg-amber-50 text-amber-800 border border-amber-200'
+                }`}
+              >
+                {claimedMeituan20 ? '20元已领' : '领20元券'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ========================================================= */}
+      {/* 6. 居中段落分割标题（参考截图：—— 业务说明 ——） */}
+      {/* ========================================================= */}
+      <div className="px-4 mt-7 mb-3">
+        <div className="flex items-center justify-center space-x-3">
+          <div className="h-px bg-gradient-to-r from-transparent via-amber-300 to-amber-400 w-16"></div>
+          <h3 className="text-sm font-black text-slate-800 tracking-wider">
+            业务说明
+          </h3>
+          <div className="h-px bg-gradient-to-l from-transparent via-amber-300 to-amber-400 w-16"></div>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 7. 业务说明卡片（严格参考截图中的蓝色高亮加粗文案和排版） */}
+      {/* 色系沿用暖色与清晰黑体，符合合规标准 */}
+      {/* ========================================================= */}
+      <div className="px-4">
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 text-xs text-slate-700 leading-relaxed space-y-2.5">
+          <p>
+            <strong className="text-slate-900 font-bold">产品名称：</strong>
+            DXT通信充值会员尊享权益（编号：DXT25JT2026）
+          </p>
+          <p>
+            <strong className="text-slate-900 font-bold">产品资费：</strong>
+            <strong className="text-slate-900 font-black">1.99元/月</strong>，按自然月计费。若享用收银台立减等平台优惠，<strong className="text-[#B45309] font-bold">首月实付金额仅需0.01元</strong>，具体以收银台实付金额为准。
+          </p>
+          <p>
+            <strong className="text-slate-900 font-bold">产品有效期：</strong>
+            <strong className="text-slate-900">长期有效</strong>，如双方在有效期届满前无异议，<strong className="text-amber-700 font-bold">有效期自动续展，每次续展1个月</strong>。
+            <strong className="text-emerald-700 font-bold">有效期内可随时退订</strong>。如需退订，可在通信服务中心「个人中心-续费管理」或在签约代扣平台随时关闭代扣。退订后产品次月起失效。退订后仍可享受服务至当月（自然月）月底，次月起失效。
+          </p>
+          <p>
+            <strong className="text-slate-900 font-bold">服务内容：</strong>
+            <strong className="text-[#B45309] font-bold">每月必得2元话费直减券</strong>，同时可随机获得<strong className="text-amber-700 font-bold">抖音电商神券（最高50元）</strong>。连续签到可免费领取<strong className="text-amber-800 font-bold">美团生活券（最高20元）</strong>。
+          </p>
+          <p>
+            <strong className="text-slate-900 font-bold">其他说明：</strong>
+            无在网期限要求，无合约捆绑，无违约责任。
+          </p>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 8. 常见问题 FAQ 折叠面板 (可快速展开解答) */}
+      {/* ========================================================= */}
+      <div className="px-4 mt-4">
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+          <div className="flex items-center space-x-2 pb-3 border-b border-slate-100">
+            <HelpCircle className="w-4 h-4 text-amber-500" />
+            <h3 className="font-black text-sm text-slate-900">常见问题解答</h3>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {[
+              {
+                q: '什么是DXT通信充值会员首月0.01元？',
+                a: '新用户首次开通可享受首月仅需0.01元的超级特惠尝鲜价，第二个月起按1.99元/月连续包月自动续费，随时可以在续费管理中关闭。'
+              },
+              {
+                q: '2元话费直减券如何使用？',
+                a: '会员开通后系统自动存入卡包，在通信服务中心为手机号充值时系统将无门槛自动勾选抵扣2元现金。'
+              },
+              {
+                q: '抖音电商神券是如何随机发放的？',
+                a: '开通会员后，系统在权益专享池中随机匹配专属好礼（最高50元电商新人券或满99减5专享券），即刻发放到当前绑定手机号的抖音商城账户中。'
+              },
+              {
+                q: '连续签到美团生活券如何领取？',
+                a: '会员每天点击「今日打卡」累计天数，连续签到满3天可点击「领10元券」，连续签到满5天可点击「领20元券」，券码自动直发到美团账户。'
+              },
+              {
+                q: '如何取消连续包月或关闭自动续费？',
+                a: '用户随时可在本小程序「续费管理」页点击「取消自动续费」，或在支付软件扣款管理中取消签约，当月已生效权益继续享受至自然月底。'
+              }
+            ].map((faq, idx) => (
+              <div key={idx} className="py-2.5">
+                <button
+                  onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
+                  className="w-full flex items-center justify-between text-left text-xs font-bold text-slate-800 hover:text-[#B45309] transition-colors"
+                >
+                  <span className="flex-1 pr-2">Q: {faq.q}</span>
+                  {openFaqIndex === idx ? (
+                    <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                  )}
+                </button>
+                {openFaqIndex === idx && (
+                  <div className="mt-2 text-xs text-slate-500 leading-relaxed bg-[#FFFDF8] p-2.5 rounded-xl border border-amber-100/70">
+                    A: {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+
+      {/* ========================================================= */}
+      {/* 10. 底部吸底悬浮 CTA (严格参考截图底部的吸底悬浮组件) */}
+      {/* ========================================================= */}
+      {!isMember && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md px-4 pt-3 pb-3 border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] max-w-[420px] mx-auto">
+          {/* 按钮上方右侧小角标（参考截图） */}
+          <div className="relative">
+            <div className="absolute -top-6 right-6 z-10 bg-gradient-to-r from-[#FFD600] to-[#FFA000] text-amber-950 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md flex items-center space-x-1 border border-white">
+              <Sparkles className="w-3 h-3 text-amber-900" />
+              <span>开通立送2元话费</span>
+            </div>
+
+            <button
+              onClick={() => onOpenCheckout(currentSku)}
+              className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white py-3.5 px-5 rounded-full shadow-lg shadow-red-500/25 flex flex-col items-center justify-center active:scale-[0.99] transition-transform cursor-pointer"
+            >
+              <div className="text-sm font-black tracking-wide">
+                首月仅0.01元 次月起1.99元/月
+              </div>
+              <div className="text-[10px] text-white/90 font-medium">
+                <span className="underline font-bold">连续包月</span> 随时可退
+              </div>
+            </button>
+          </div>
+
+          <div className="mt-2 text-center text-[10px] text-slate-400">
+            <span>按自然月计费，开通前请阅读</span>
+            <div className="inline-flex space-x-1 text-[#8C531B] ml-1">
+              <button onClick={() => setShowRuleModal('notice')} className="hover:underline hover:text-[#5A330B]">
+                《会员使用须知》
+              </button>
+              <button onClick={() => setShowRuleModal('business')} className="hover:underline hover:text-[#5A330B]">
+                《业务说明》
+              </button>
+              <button onClick={() => setShowRuleModal('privacy')} className="hover:underline hover:text-[#5A330B]">
+                《隐私政策》
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* Toast 提示浮层 */}
+      {/* ========================================================= */}
       {toastMessage && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-sm border border-slate-700/80 flex items-center space-x-2 animate-bounce whitespace-nowrap">
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-sm border border-white/20 flex items-center space-x-2 animate-bounce whitespace-nowrap">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Feedback Modal */}
-      {showFeedbackModal && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-4 animate-scaleUp">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
-                <MessageSquareQuote className="w-4 h-4 text-[#0066CC]" />
-                <span>用户服务与反馈</span>
-              </h3>
-              <button onClick={() => setShowFeedbackModal(false)} className="text-slate-400 text-lg">✕</button>
+      {/* ========================================================= */}
+      {/* 奖励发放祝贺弹窗 */}
+      {/* ========================================================= */}
+      {showRewardModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-4 animate-scaleUp text-center relative">
+            <button 
+              onClick={() => setShowRewardModal(null)}
+              className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF9800] to-[#D97706] text-white mx-auto flex items-center justify-center shadow-lg shadow-amber-500/25">
+              <Gift className="w-7 h-7" />
             </div>
-            
-            <p className="text-xs text-slate-600 leading-relaxed">
-              如有任何权益自动下发疑问、自动扣款咨询或产品建议，可随时联系官方客服。客服热线：400-800-6688（工作日 9:00 - 18:00）。
-            </p>
+
+            <div>
+              <span className="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
+                {showRewardModal.badge}
+              </span>
+              <h3 className="text-base font-black text-slate-900 mt-2">{showRewardModal.title}</h3>
+              <p className="text-xs text-slate-500 mt-1">{showRewardModal.desc}</p>
+            </div>
+
+            <div className="bg-[#FFFDF5] border border-amber-200 rounded-2xl py-3 px-4">
+              <span className="text-2xl font-black text-[#B45309]">{showRewardModal.value}</span>
+              <span className="text-xs font-bold text-amber-800 ml-1">专属立减券</span>
+            </div>
 
             <button
               onClick={() => {
-                setShowFeedbackModal(false);
-                showToast('已收到您的反馈，感谢支持！');
+                setShowRewardModal(null);
+                showToast('已存入卡包，欢迎前往使用！');
               }}
-              className="w-full py-2.5 rounded-full bg-[#0066CC] text-white text-xs font-bold active:scale-95 transition-transform"
+              className="w-full py-2.5 rounded-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white text-xs font-bold shadow-md active:scale-95 transition-transform"
             >
               我知道了
             </button>
           </div>
         </div>
       )}
+
+      {/* ========================================================= */}
+      {/* 规则须知 Modal (包括省钱攻略) */}
+      {/* ========================================================= */}
+      {showRuleModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl space-y-3.5 animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+                <ShieldCheck className="w-4 h-4 text-amber-600" />
+                <span>
+                  {showRuleModal === 'notice' && '《会员使用须知》'}
+                  {showRuleModal === 'business' && '《业务说明与计费细则》'}
+                  {showRuleModal === 'privacy' && '《用户隐私政策》'}
+                  {showRuleModal === 'strategy' && 'DXT会员省钱全攻略'}
+                </span>
+              </h3>
+              <button onClick={() => setShowRuleModal(null)} className="text-slate-400 p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-600 space-y-2.5 max-h-72 overflow-y-auto pr-1">
+              {showRuleModal === 'strategy' && (
+                <>
+                  <div className="bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-amber-950 font-bold">
+                    💰 怎么开通最划算？
+                  </div>
+                  <p>1. <strong>首月仅需0.01元</strong>：新用户首次开通立享全额立减，直接获得2元话费直减券，首单充值净赚1.99元！</p>
+                  <p>2. <strong>抖音电商神券</strong>：开通后自动派发，新客专享50元大额神券，老客立享满99减5券。</p>
+                  <p>3. <strong>打卡领美团券</strong>：连续签到满3天领10元美团生活券，满5天领20元美团生活券，外卖到店均可用！</p>
+                  <p>4. <strong>无捆绑随时退</strong>：连续包月到期前无异议自动续展，在小程序内可随时一键取消自动续费。</p>
+                </>
+              )}
+              {showRuleModal === 'notice' && (
+                <>
+                  <p>1. 本会员名为「DXT通信充值会员」，包含2元话费直减券、抖音电商随机神券及连续签到生活券。</p>
+                  <p>2. 新用户首月优惠立减1.98元，仅需0.01元；次月起恢复1.99元/月按自然月自动扣费。</p>
+                  <p>3. 订购成功后权益立即下发至绑定手机号账户，充话费无门槛抵扣2元。</p>
+                  <p>4. 连续签到3天送10元美团券，连续签到5天送20元美团券，断签后需重新打卡。</p>
+                </>
+              )}
+              {showRuleModal === 'business' && (
+                <>
+                  <p>1. 资费标准：首月0.01元，次月起1.99元/月。由通信服务中心与动信通联合提供支撑。</p>
+                  <p>2. 自动续费：每月自然月底自动扣款续展，支持微信、支付宝或抖音支付代扣。</p>
+                  <p>3. 退订规则：可随时在续费管理中关闭自动续订，退订后当月权益保留至自然月底。</p>
+                </>
+              )}
+              {showRuleModal === 'privacy' && (
+                <>
+                  <p>1. 我们严格保护您的手机号码与充值账户安全，仅用于话费充值与卡券权益核销发放。</p>
+                  <p>2. 不会向任何无关第三方泄露您的账户流水与交易隐私。</p>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowRuleModal(null)}
+              className="w-full py-2.5 rounded-full bg-gradient-to-r from-[#FF9800] to-[#FF2D55] text-white text-xs font-bold active:scale-95 transition-transform"
+            >
+              我知道了
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

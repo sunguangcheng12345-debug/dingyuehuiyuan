@@ -16,22 +16,22 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       <div className="p-3 pt-3 w-full">
         <div className="w-full bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-xl flex items-center justify-between animate-slideDown border border-slate-100">
           <div className="flex items-center space-x-2.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-[#FE2C55] text-white flex flex-col items-center justify-center font-black text-[11px] shrink-0 shadow-xs">
-              <span>动信</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex flex-col items-center justify-center font-black text-[11px] shrink-0 shadow-xs">
+              <span>DXT</span>
               <span className="text-[8px] -mt-0.5">会员</span>
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-bold text-slate-900 leading-tight">客服回复</div>
+              <div className="text-sm font-bold text-slate-900 leading-tight">服务通知</div>
               <div className="text-xs text-slate-500 truncate max-w-[200px] mt-0.5">
-                动信通官方旗舰店: 请查看您咨询的...
+                通信服务中心: 您的会员权益已生效...
               </div>
             </div>
           </div>
           <button 
             onClick={onConfirm}
-            className="text-sm font-bold text-[#FE2C55] px-2.5 py-1 hover:bg-rose-50 rounded-lg shrink-0"
+            className="text-sm font-bold text-[#1C68F2] px-2.5 py-1 hover:bg-blue-50 rounded-lg shrink-0"
           >
-            回复
+            查看
           </button>
         </div>
       </div>
@@ -53,7 +53,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
 
         {/* Title */}
         <h2 className="text-[20px] font-bold text-slate-900 tracking-normal text-center mb-8">
-          动信通自动续费开通成功
+          DXT通信充值会员开通成功
         </h2>
 
         {/* Payment Order Option Card - Soft gray rounded box with generous inner padding */}

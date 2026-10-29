@@ -32,10 +32,11 @@ export const OrderDetailPage: React.FC<OrderDetailPageProps> = ({
   price,
   selectedSku,
 }) => {
-  const finalPrice = selectedSku ? selectedSku.price : (price ?? 1.99);
-  const skuName = selectedSku ? selectedSku.name : '动信通充值会员';
-  const skuTier = selectedSku ? selectedSku.tierNumber : '连包月卡';
-  const skuShortName = selectedSku ? selectedSku.shortName : '月卡';
+  const finalPrice = selectedSku?.firstMonthPrice ?? (price ?? 0.01);
+  const renewalPrice = selectedSku?.renewalPrice ?? selectedSku?.price ?? 1.99;
+  const skuName = selectedSku ? selectedSku.name : 'DXT通信充值会员';
+  const skuTier = selectedSku ? selectedSku.tierNumber : '首月0.01元';
+  const skuShortName = selectedSku ? selectedSku.shortName : '通信充值会员';
   const [copied, setCopied] = useState(false);
   const [rating, setRating] = useState(0);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
