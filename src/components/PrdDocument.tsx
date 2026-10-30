@@ -27,12 +27,13 @@ import {
   Clock, 
   Ticket,
   HelpCircle,
-  AlertCircle
+  AlertCircle,
+  Crown
 } from 'lucide-react';
 import { MEMBERSHIP_SKUS } from '../data/membershipSkus';
 
 export const PrdDocument: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<'overview' | 'matrix' | 'features' | 'flow' | 'compliance' | 'metrics'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'active_member' | 'matrix' | 'features' | 'flow' | 'compliance' | 'metrics'>('active_member');
   const [copied, setCopied] = useState(false);
 
   const handleCopySummary = () => {
@@ -46,7 +47,8 @@ export const PrdDocument: React.FC = () => {
 4. 会员天天打卡专属签到福利：
    - 连续签到3天：免费领取10元美团生活券
    - 连续签到5天：免费领取20元美团生活券
-5. 业务说明与常见问题规范：严格对标官方透明计费规范，开通前合规提示，随时支持退订。`);
+5. 业务说明与常见问题规范：严格对标官方透明计费规范，开通前合规提示，随时支持退订。
+6. 已开通DXT会员展示体系：从“拉新转化”彻底切换为“履约促活与留存”，展示尊贵黑金卡、已生效券去使用、充值复购CTA、累计省钱数据与透明续费管理。`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -67,7 +69,7 @@ export const PrdDocument: React.FC = () => {
                 通信服务中心 · DXT通信充值会员产品需求文档 (PRD)
               </h1>
               <p className="mt-2 text-slate-400 text-sm max-w-3xl leading-relaxed">
-                全面规范通信服务中心小程序DXT通信充值会员首月0.01元尝鲜、次月1.99元连续包月交易链路、2元话费必得直减、电商神券随机2选1盲盒机制、连续签到美团券履约与退订管理。
+                全面规范通信服务中心小程序DXT通信充值会员首月0.01元尝鲜、次月1.99元连续包月交易链路、2元话费必得直减、电商神券随机2选1盲盒机制、已开通会员尊享状态展示、连续签到美团券履约与退订管理。
               </p>
             </div>
 
@@ -102,6 +104,7 @@ export const PrdDocument: React.FC = () => {
               <div className="text-orange-400 font-black text-sm sm:text-base mt-0.5">3天10元 / 5天20元</div>
               <div className="text-[10px] text-slate-500 mt-0.5">美团生活券连续打卡奖励</div>
             </div>
+
             <div>
               <div className="text-slate-400 font-medium">合规与风控保障</div>
               <div className="text-purple-400 font-black text-sm sm:text-base mt-0.5">扣款前5天提醒 + 随时退订</div>
@@ -109,9 +112,10 @@ export const PrdDocument: React.FC = () => {
             </div>
           </div>
 
-          {/* 6 Main PRD Navigation Tabs */}
+          {/* Main PRD Navigation Tabs */}
           <div className="mt-8 flex flex-wrap gap-2 border-t border-[#2D3142] pt-4">
             {[
+              { id: 'active_member', label: '👑 已开通DXT会员前端展示规范 (新增设计)', icon: Award },
               { id: 'overview', label: '1. 项目背景与设计原则', icon: Layers },
               { id: 'matrix', label: '2. 商品矩阵与资费定义', icon: Gift },
               { id: 'features', label: '3. 核心功能与页面交互规范', icon: Smartphone },
@@ -142,6 +146,162 @@ export const PrdDocument: React.FC = () => {
 
       {/* Main Document Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+
+        {/* SECTION: ACTIVE MEMBER DISPLAY SPEC (已开通DXT会员前端展示规范) */}
+        {activeSection === 'active_member' && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Header Highlight Card */}
+            <div className="bg-gradient-to-r from-amber-950/40 via-[#1C1F2E] to-blue-950/30 p-6 rounded-2xl border border-amber-500/30 shadow-lg space-y-4">
+              <div className="flex items-center space-x-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                <Crown className="w-4 h-4 fill-amber-400" />
+                <span>核心设计专题 · 已开通DXT会员前端展示与交互设计规范</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white">
+                如何设计已开通DXT会员的前端体验：从「销售获客」到「履约感知与高频促活」
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-4xl">
+                用户完成首月0.01元或1.99元签约代扣后，前端核心目标发生根本性转移：不再向用户重复推销购买按钮，而是建立强大的<strong className="text-amber-300">身份尊荣感</strong>、透明的<strong className="text-emerald-400">履约与省钱感知（ROI）</strong>、直达闭环的<strong className="text-blue-400">权益核销路径（去充值立减）</strong>，以及让用户信赖的<strong className="text-slate-300">续费管理通道</strong>。
+              </p>
+            </div>
+
+            {/* 核心对比矩阵 */}
+            <div className="bg-[#161823] p-6 rounded-2xl border border-[#2D3142] shadow-sm space-y-4">
+              <h3 className="text-base font-black text-white flex items-center space-x-2">
+                <span className="w-2 h-4 bg-amber-500 rounded-full inline-block" />
+                <span>一、新客未开通态 VS 已开通DXT会员态 全维度对比矩阵</span>
+              </h3>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-[#1F2231] text-slate-300 border-b border-[#2D3142]">
+                      <th className="py-3 px-3 w-28">界面模块</th>
+                      <th className="py-3 px-4 w-1/3 text-rose-300">未开通用户视角 (新客拉新态)</th>
+                      <th className="py-3 px-4 w-1/3 text-amber-300">已开通DXT会员视角 (履约促活态)</th>
+                      <th className="py-3 px-3 text-slate-400">产品设计核心诉求</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2D3142] text-slate-300">
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">顶部Hero标题</td>
+                      <td className="py-3 px-4 text-slate-400">DXT通信充值会员 · 充值会员享特权 | 连续包月更省钱</td>
+                      <td className="py-3 px-4 text-amber-200 font-bold">DXT通信充值会员 · 充值会员享特权 | 连续包月更省钱 (三态保持一致)</td>
+                      <td className="py-3 px-3 text-slate-400">统一品牌心智，由下方身份卡片区分履约状态</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">会员身份看板</td>
+                      <td className="py-3 px-4 text-slate-500">无（直接展示诱导购卡）</td>
+                      <td className="py-3 px-4 text-slate-200">
+                        <strong className="text-amber-300">尊贵黑金卡片</strong>：显示手机号脱敏、履约中状态、本月已省¥52.00看板、下期扣款日、续费管理入口
+                      </td>
+                      <td className="py-3 px-3 text-slate-400">超高Perceived ROI，降低退订流失率</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">券1 (话费直减)</td>
+                      <td className="py-3 px-4 text-slate-400">标贴【每月必得】，按钮【立即领取】</td>
+                      <td className="py-3 px-4 text-emerald-300">
+                        标贴【本月已生效】，按钮<strong>【去充值立减】</strong>
+                      </td>
+                      <td className="py-3 px-3 text-slate-400">引导直接前往充值中心核销，创造业务复购</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">券2 (电商神券)</td>
+                      <td className="py-3 px-4 text-slate-400">单券展示5~50元盲盒，按钮【立即领取】</td>
+                      <td className="py-3 px-4 text-amber-300">
+                        标贴【已发放到账】，展示匹配的券（新客50元/老客99-5），按钮<strong>【去抖音使用】</strong>
+                      </td>
+                      <td className="py-3 px-3 text-slate-400">让用户感知大额收益已落袋，去商城结算抵扣</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">核心CTA区</td>
+                      <td className="py-3 px-4 text-rose-300">大红按钮【首月0.01元 次月起1.99元】+ 协议</td>
+                      <td className="py-3 px-4 text-orange-300">
+                        暖金按钮<strong>【去充话费立减2元现金】</strong> + 【续费管理/退订说明】
+                      </td>
+                      <td className="py-3 px-3 text-slate-400">杜绝重复购买报错，高频促活充值GMV</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">权益分割线</td>
+                      <td className="py-3 px-4 text-slate-400">—— 开通后可得会员服务 ——</td>
+                      <td className="py-3 px-4 text-amber-200 font-bold">—— 您尊享的 3 大专属会员特权 ——</td>
+                      <td className="py-3 px-3 text-slate-400">心理暗示：由“待获取”转为“已拥有”</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">权益1 (话费模块)</td>
+                      <td className="py-3 px-4 text-slate-400">小方块标【每月发放 · 次月自动到】</td>
+                      <td className="py-3 px-4 text-emerald-300 font-bold">小方块高亮【本月到账✓ · 随时可用】</td>
+                      <td className="py-3 px-3 text-slate-400">强化权益即时可用性</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">权益3 (美团打卡)</td>
+                      <td className="py-3 px-4 text-slate-400">提示“请先开通会员再打卡”</td>
+                      <td className="py-3 px-4 text-amber-300">直接打卡参与！满3天领10元，满5天领20元</td>
+                      <td className="py-3 px-3 text-slate-400">高粘性签到闭环，日活增长利器</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-3 font-bold text-white">底部吸底悬浮栏</td>
+                      <td className="py-3 px-4 text-rose-300">常驻吸底购买栏【首月0.01元 立即开通】</td>
+                      <td className="py-3 px-4 text-amber-300">
+                        <strong>会员服务悬浮栏</strong>：👑 DXT会员尊享中 + 【续费管理】+【去充值立减】
+                      </td>
+                      <td className="py-3 px-3 text-slate-400">无论滑到何处，充值优惠触手可及</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 5大设计落地规范细则 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-[#161823] p-5 rounded-2xl border border-[#2D3142] space-y-3">
+                <div className="flex items-center space-x-2 text-amber-400 text-sm font-bold">
+                  <Award className="w-4 h-4" />
+                  <span>模块一：尊贵黑金身份牌 (VIP Digital Crest)</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  采用深空黑金渐变底色，搭配微光金色边框与立体皇冠徽标。左侧呈现绑定充值账户（185****0637）与“黄金会员”标签；右上角常驻“会员生效中”动态小绿标；底部提供三列数据面板：<br/>
+                  • <strong>本月已省 ¥52.00</strong>（心理账户感知收益）；<br/>
+                  • <strong>待使用好券 2 张</strong>（督促核销）；<br/>
+                  • <strong>下期续约日 04-01 (1.99元)</strong>（透明无欺瞒）。
+                </p>
+              </div>
+
+              <div className="bg-[#161823] p-5 rounded-2xl border border-[#2D3142] space-y-3">
+                <div className="flex items-center space-x-2 text-blue-400 text-sm font-bold">
+                  <Ticket className="w-4 h-4" />
+                  <span>模块二：双券待使用态与闭环交互</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  • <strong>券1 (2元话费券)</strong>：右侧药丸按钮文案固定为【去充值立减】。用户点击后，Toast 提示“已为您享受2元直减，正在前往充值”，并直接导航至充值中心，充值50元立减为48元。<br/>
+                  • <strong>券2 (电商神券)</strong>：根据后端返回用户画像，已锁定展示新人券或专享券，按钮为【去抖音使用】，点击直接拉起抖音卡包或复制券码。
+                </p>
+              </div>
+
+              <div className="bg-[#161823] p-5 rounded-2xl border border-[#2D3142] space-y-3">
+                <div className="flex items-center space-x-2 text-emerald-400 text-sm font-bold">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>模块三：阳光续费管理与退订保障机制</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  合规是连续包月业务的生命线。前端在卡片右上角、核心CTA区辅助行、底部悬浮栏三处均设置明显的【续费管理 / 退订说明】入口。<br/>
+                  用户点击可一键进入独立管理页，查看签约订单、代扣签约流水号，并随时支持一键取消自动续费。取消后当月权益保留至月底，次月不再扣费。
+                </p>
+              </div>
+
+              <div className="bg-[#161823] p-5 rounded-2xl border border-[#2D3142] space-y-3">
+                <div className="flex items-center space-x-2 text-purple-400 text-sm font-bold">
+                  <Clock className="w-4 h-4" />
+                  <span>模块四：生命周期扣款提醒与冷静期交互</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  • <strong>扣款前5天 (每月25日)</strong>：身份看板提示“即将续费：下月1.99元”，发送短信与站内信，告知即将续期及取消方法。<br/>
+                  • <strong>扣费成功 (次月1日)</strong>：自动更新账单周期，重置当月2元话费券，提示“本月新特权已到账”。<br/>
+                  • <strong>扣费失败 (欠费/解约)</strong>：进入7天宽限期，提示“代扣失败，请检查支付方式”，保留基础权益。
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* SECTION 1: OVERVIEW & PRINCIPLES */}
         {activeSection === 'overview' && (

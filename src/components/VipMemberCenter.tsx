@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Smartphone, 
   ShoppingBag, 
@@ -42,6 +42,8 @@ interface VipMemberCenterProps {
   isMember?: boolean;
   userStatus?: string;
   subscribedSkuIds?: string[];
+  userPhone?: string;
+  onGoToRenewalManagement?: () => void;
 }
 
 export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
@@ -52,8 +54,11 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
   isMember: isMemberProp,
   userStatus,
   subscribedSkuIds,
+  userPhone = '18518920637',
+  onGoToRenewalManagement,
 }) => {
   const isMember = isMemberProp ?? (userStatus === 'active_member' || (subscribedSkuIds && subscribedSkuIds.length > 0));
+  const isExpired = userStatus === 'cancelled_member';
   const currentSku = MEMBERSHIP_SKUS[0]; // DXT通信充值会员
 
   // Interactive States
@@ -69,11 +74,19 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
 
   // Random 2-in-1 eCommerce Coupon State (前端展示随机2选1，后端基于新老客下发50元或99减5)
   const [simulatedUserType, setSimulatedUserType] = useState<'new_user' | 'regular_user'>('new_user');
-  const [isRevealed, setIsRevealed] = useState<boolean>(isMember);
+  const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
 
-  // 2元话费直减券领取状态
-  const [billCouponClaimed, setBillCouponClaimed] = useState<boolean>(isMember);
+  // 优惠券领取状态 (已开通DXT会员页面：初始展示「立即领取」，点击领取后文案变为「已领取」)
+  const [billCouponClaimed, setBillCouponClaimed] = useState<boolean>(false);
+  const [ecomCouponClaimed, setEcomCouponClaimed] = useState<boolean>(false);
+
+  // 状态切换时重置为待领取初始态，方便演示
+  useEffect(() => {
+    setBillCouponClaimed(false);
+    setEcomCouponClaimed(false);
+    setIsRevealed(false);
+  }, [isMember]);
 
   // FAQ Accordion Open State
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -147,10 +160,28 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
     }
   };
 
-  // Reveal eCommerce coupon based on backend user identity check
-  const handleRevealCoupon = () => {
-    if (isRevealed) {
-      showToast('神券已发放至绑定的抖音商城账户，可直接使用！');
+  // 话费直减券领取
+  const handleClaimBillCoupon = () => {
+    if (!isMember) {
+      onOpenCheckout(currentSku);
+      return;
+    }
+    if (billCouponClaimed) {
+      showToast('您已成功领取2元话费直减券，充值时将自动立减！');
+      return;
+    }
+    setBillCouponClaimed(true);
+    showToast('🎉 领取成功！2元话费直减券已生效，充值话费时将自动为您抵扣。');
+  };
+
+  // 电商专享神券领取（点击后触发后端逻辑发新客50元或99-5券）
+  const handleClaimEcomCoupon = () => {
+    if (!isMember) {
+      handleRevealCoupon();
+      return;
+    }
+    if (ecomCouponClaimed) {
+      showToast('您已成功领取抖音电商专享神券，已存入您的抖音商城卡券包！');
       return;
     }
     if (isSpinning) return;
@@ -158,26 +189,59 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
     setTimeout(() => {
       setIsSpinning(false);
       setIsRevealed(true);
+      setEcomCouponClaimed(true);
       if (simulatedUserType === 'new_user') {
         setShowRewardModal({
           badge: '新客专属礼遇',
-          title: '获得 50元 抖音电商新人券！',
+          title: '恭喜领取 50元 抖音电商新人神券！',
           desc: '经系统后端识别，您的账号为抖音电商新客，已为您匹配最高50元新人专属神券！已自动存入绑定的抖音商城账户。',
           value: '¥50.00'
         });
       } else {
         setShowRewardModal({
           badge: '商城专享礼遇',
-          title: '获得 满99减5 抖音电商专享券！',
+          title: '恭喜领取 满99减5 抖音电商专享券！',
           desc: '经系统后端识别，已为您匹配全品类通用的满99减5元电商专享券！已自动存入抖音商城卡券包。',
           value: '¥5.00'
         });
       }
-    }, 400);
+    }, 350);
+  };
+
+  // Reveal eCommerce coupon based on backend user identity check (未开通用户点击)
+  const handleRevealCoupon = () => {
+    if (isRevealed) {
+      onOpenCheckout(currentSku);
+      return;
+    }
+    if (isSpinning) return;
+    setIsSpinning(true);
+    setTimeout(() => {
+      setIsSpinning(false);
+      setIsRevealed(true);
+      if (isMember) {
+        setEcomCouponClaimed(true);
+      }
+      if (simulatedUserType === 'new_user') {
+        setShowRewardModal({
+          badge: '新客专属礼遇',
+          title: isMember ? '恭喜领取 50元 抖音电商新人券！' : '获得 50元 抖音电商新人券！',
+          desc: '经系统后端识别，您的账号为抖音电商新客，已为您匹配最高50元新人专属神券！已自动存入绑定的抖音商城账户。',
+          value: '¥50.00'
+        });
+      } else {
+        setShowRewardModal({
+          badge: '商城专享礼遇',
+          title: isMember ? '恭喜领取 满99减5 抖音电商专享券！' : '获得 满99减5 抖音电商专享券！',
+          desc: '经系统后端识别，已为您匹配全品类通用的满99减5元电商专享券！已自动存入抖音商城卡券包。',
+          value: '¥5.00'
+        });
+      }
+    }, 350);
   };
 
   return (
-    <div className="min-h-full bg-[#F4F6FA] text-slate-900 font-sans pb-36 relative select-none">
+    <div className={`min-h-full bg-[#F4F6FA] text-slate-900 font-sans ${isMember ? 'pb-10' : 'pb-36'} relative select-none`}>
       
       {/* ========================================================= */}
       {/* 1. 顶部白底清爽导航栏 (小程序名字: 通信服务中心) */}
@@ -278,7 +342,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           </svg>
         </div>
 
-        {/* 顶部标题与副标题区 */}
+        {/* 顶部标题与副标题区（三种场景文案保持一致） */}
         <div className="text-center relative z-10 mb-3.5">
           <div className="flex items-center justify-center">
             <h2 className="text-2xl sm:text-[28px] font-black tracking-tight text-[#9E3900] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
@@ -296,148 +360,166 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           </p>
         </div>
 
-        {/* 核心霸屏横向券卡片组（参考截图2：月卡专属消费券，大尺寸无杂色券面） */}
-        <div className="relative z-10">
-          {/* 霸屏双券垂直堆叠，宽大通透，高质感 */}
-          <div className="space-y-2.5">
-            {/* 券1：2元话费直减券（霸屏横向大券） */}
-            <div className="w-full max-w-full bg-white rounded-2xl border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
-              {/* 左侧券主体 */}
-              <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
-                <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-2.5 border-r border-amber-100/90 w-[68px] sm:w-[74px]">
-                  <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5 leading-none">
-                    每月必得
-                  </span>
-                  <div className="flex items-baseline">
-                    <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">2</span>
-                    <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
+        {/* ========================================================= */}
+        {/* 会员身份看板：已开通 或 已过期老客展示，样式与截图完全一致 */}
+        {/* ========================================================= */}
+        {(isMember || isExpired) && (
+          <div className="relative z-10 mb-2 bg-white/95 backdrop-blur-sm rounded-2xl px-3.5 py-3 border border-amber-300/80 shadow-[0_4px_16px_rgba(217,119,6,0.08)] flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FFA000] via-[#FF8C00] to-[#D97706] flex items-center justify-center text-white shadow-xs">
+                <Crown className="w-4 h-4 fill-white text-white" />
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-black text-slate-900 tracking-tight">
+                  {userPhone.slice(0, 3)}****{userPhone.slice(-4)}
+                </span>
+                <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[9.5px] font-black px-2 py-0.5 rounded-full shadow-xs">
+                  黄金会员
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              {isMember ? (
+                <span className="inline-flex items-center space-x-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/90 text-[10.5px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>会员生效中</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center space-x-1.5 bg-slate-50 text-slate-500 border border-slate-200/90 text-[10.5px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  <span>会员已过期</span>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* 未开通用户专属：核心霸屏横向券卡片组与开通 CTA 按钮 */}
+        {/* 已开通会员不展示上部重复券，直接引导至下方 3 大特权领券/签到 */}
+        {/* ========================================================= */}
+        {!isMember && (
+          <>
+            {/* 核心霸屏横向券卡片组（参考截图2：月卡专属消费券，大尺寸无杂色券面） */}
+            <div className="relative z-10">
+              {/* 霸屏双券垂直堆叠，宽大通透，高质感 */}
+              <div className="space-y-2.5">
+                {/* 券1：话费直减券 */}
+                <div className="w-full bg-white rounded-[20px] border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
+                  {/* 左侧券主体 */}
+                  <div className="w-[78px] sm:w-[84px] shrink-0 flex flex-col items-center justify-center py-2.5 px-1 border-r border-[#FFA000]/25 bg-white">
+                    <span className="border border-[#F59E0B] text-[#B45309] bg-white text-[9px] font-black px-2 py-0.5 rounded-full mb-1 leading-none shadow-xs">
+                      每月必得
+                    </span>
+                    <div className="flex items-baseline text-[#9A3412]">
+                      <span className="text-2xl sm:text-[28px] font-black italic tracking-tighter">2</span>
+                      <span className="text-xs sm:text-sm font-black ml-0.5">元</span>
+                    </div>
+                  </div>
+
+                  {/* 中间券信息区 */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center py-2.5 px-3 sm:px-3.5 bg-white">
+                    <div className="text-[14px] sm:text-[15px] font-black text-slate-900 tracking-tight leading-tight">
+                      话费直减券
+                    </div>
+                    <div className="text-[11px] sm:text-[11.5px] text-[#8C4A16] font-medium mt-1 tracking-tight leading-tight">
+                      充值自动立减 · 三网通用
+                    </div>
+                  </div>
+
+                  {/* 中间上下打孔凹槽（无中线虚线，纯净咬口） */}
+                  <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#FFF1E0] border-b-2 border-[#FFA000] -mt-[9px] -ml-[7px]"></div>
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#FFF1E0] border-t-2 border-[#FFA000] -mb-[9px] -ml-[7px]"></div>
+                  </div>
+
+                  {/* 右侧金色领券区（白底药丸按钮） */}
+                  <div 
+                    onClick={() => onOpenCheckout(currentSku)}
+                    className="w-[82px] sm:w-[90px] shrink-0 bg-[#FFA000] flex flex-col items-center justify-center p-2 text-center cursor-pointer active:brightness-95 transition-all"
+                  >
+                    <div className="w-full bg-white text-[#9A3412] text-xs font-black py-1.5 px-1 rounded-full shadow-xs active:scale-95 transition-transform text-center truncate">
+                      立即领取
+                    </div>
                   </div>
                 </div>
-                <div className="pl-2.5 sm:pl-3 flex-1 min-w-0">
-                  <div className="text-xs sm:text-[13.5px] font-black text-slate-900 truncate">
-                    话费直减现金券
+
+                {/* 券2：抖音电商专享神券 */}
+                <div className="w-full bg-white rounded-[20px] border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
+                  {/* 左侧券主体 */}
+                  <div className="w-[78px] sm:w-[84px] shrink-0 flex flex-col items-center justify-center py-2.5 px-1 border-r border-[#FFA000]/25 bg-white">
+                    <span className="border border-[#F59E0B] text-[#B45309] bg-white text-[9px] font-black px-2 py-0.5 rounded-full mb-1 leading-none shadow-xs">
+                      最高50元
+                    </span>
+                    <div className="flex items-baseline text-[#9A3412]">
+                      <span className="text-xl sm:text-[24px] font-black italic tracking-tighter">5~50</span>
+                      <span className="text-xs sm:text-sm font-black ml-0.5">元</span>
+                    </div>
                   </div>
-                  <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
-                    充值自动立减 · 三网通用
+
+                  {/* 中间券信息区 */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center py-2.5 px-3 sm:px-3.5 bg-white">
+                    <div className="text-[14px] sm:text-[15px] font-black text-slate-900 tracking-tight leading-tight">
+                      抖音电商专享神券
+                    </div>
+                    <div className="text-[11px] sm:text-[11.5px] text-[#8C4A16] font-medium mt-1 tracking-tight leading-tight">
+                      最高可领50元 · 购物自动抵扣
+                    </div>
+                  </div>
+
+                  {/* 中间上下打孔凹槽（无中线虚线，纯净咬口） */}
+                  <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#FFF1E0] border-b-2 border-[#FFA000] -mt-[9px] -ml-[7px]"></div>
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#FFF1E0] border-t-2 border-[#FFA000] -mb-[9px] -ml-[7px]"></div>
+                  </div>
+
+                  {/* 右侧金色领券区（白底药丸按钮） */}
+                  <div 
+                    onClick={() => onOpenCheckout(currentSku)}
+                    className="w-[82px] sm:w-[90px] shrink-0 bg-[#FFA000] flex flex-col items-center justify-center p-2 text-center cursor-pointer active:brightness-95 transition-all"
+                  >
+                    <div className="w-full bg-white text-[#9A3412] text-xs font-black py-1.5 px-1 rounded-full shadow-xs active:scale-95 transition-transform text-center truncate">
+                      立即领取
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* 中间上下打孔凹槽与垂直虚线 */}
-              <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
-                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
-                <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
-                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
-              </div>
-
-              {/* 右侧金色领券区（白底药丸按钮） */}
-              <div 
+            {/* 核心 CTA 操作区：未开通新客订购引导与协议 */}
+            <div className="mt-4 relative z-10">
+              {/* 未开通用户 / 过期老客：核心大尺寸开通 CTA 按钮 */}
+              <button
                 onClick={() => onOpenCheckout(currentSku)}
-                className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center cursor-pointer active:brightness-95 transition-all"
+                className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] hover:brightness-105 active:scale-[0.98] transition-all text-white py-3.5 px-5 rounded-full shadow-[0_8px_25px_rgba(255,40,75,0.38)] flex flex-col items-center justify-center cursor-pointer"
               >
-                <div className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-transform text-center truncate">
-                  立即领取
+                <div className="text-[15px] font-black tracking-wide">
+                  {isExpired ? '1.99元/月 一单回本' : '首月仅0.01元 次月起1.99元/月'}
                 </div>
-              </div>
-            </div>
-
-            {/* 券2：抖音电商神券（前端单券展示，最高50元，最低5元） */}
-            <div className={`w-full max-w-full bg-white rounded-2xl border-2 ${
-              isRevealed ? 'border-[#FF9800] ring-2 ring-amber-300/70 shadow-md' : 'border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)]'
-            } overflow-hidden flex items-stretch relative transition-all`}>
-              {/* 左侧券主体 */}
-              <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
-                <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-2.5 border-r border-amber-100/90 w-[68px] sm:w-[74px]">
-                  <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5 leading-none">
-                    {isRevealed ? (simulatedUserType === 'new_user' ? '新客礼遇' : '商城专享') : '最高50元'}
-                  </span>
-                  <div className="flex items-baseline">
-                    {isRevealed ? (
-                      simulatedUserType === 'new_user' ? (
-                        <>
-                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">最高</span>
-                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">50</span>
-                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">满99减</span>
-                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">5</span>
-                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
-                        </>
-                      )
-                    ) : (
-                      <>
-                        <span className="text-xl sm:text-2xl font-black italic tracking-tighter text-[#B45309]">5~50</span>
-                        <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
-                      </>
-                    )}
-                  </div>
+                <div className="text-xs text-white/95 font-medium mt-0.5">
+                  连续包月 随时可退
                 </div>
-                <div className="pl-2.5 sm:pl-3 flex-1 min-w-0">
-                  <div className="text-xs sm:text-[13.5px] font-black text-slate-900 truncate">
-                    {isRevealed 
-                      ? (simulatedUserType === 'new_user' ? '抖音电商新人神券' : '抖音电商专享券') 
-                      : '抖音电商专享神券'}
-                  </div>
-                  <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
-                    {isRevealed
-                      ? '已自动匹配存入绑定的抖音账号'
-                      : '最高可领50元 · 最低5元 · 自动发放'}
-                  </div>
-                </div>
-              </div>
-
-              {/* 中间上下打孔凹槽与垂直虚线 */}
-              <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
-                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
-                <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
-                <div className="w-3 h-3 rounded-full bg-[#FFE7D0] border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
-              </div>
-
-              {/* 右侧金色领券区（白底药丸按钮） */}
-              <div 
-                onClick={handleRevealCoupon}
-                className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center cursor-pointer active:brightness-95 transition-all"
-              >
-                <div className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-transform text-center truncate">
-                  {isRevealed ? '立即使用' : '立即领取'}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 核心大尺寸开通 CTA 按钮（唯一保留鲜明红橙色调的高转化支付按钮） */}
-        <div className="mt-4 relative z-10">
-          <button
-            onClick={() => onOpenCheckout(currentSku)}
-            className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] hover:brightness-105 active:scale-[0.98] transition-all text-white py-3.5 px-5 rounded-full shadow-[0_8px_25px_rgba(255,40,75,0.38)] flex flex-col items-center justify-center cursor-pointer"
-          >
-            <div className="text-[15px] font-black tracking-wide">
-              首月仅0.01元 次月起1.99元/月
-            </div>
-            <div className="text-xs text-white/95 font-medium mt-0.5">
-              连续包月 随时可退
-            </div>
-          </button>
-
-          {/* 协议与须知细则链接（改用温润暖金褐色，不与红色支付按钮竞争注意力） */}
-          <div className="mt-3 text-center text-[10.5px] text-[#8C6246]">
-            <div>按自然月计费，开通前请阅读</div>
-            <div className="inline-flex space-x-1.5 text-[#8C531B] mt-1 font-medium">
-              <button onClick={() => setShowRuleModal('notice')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
-                《会员使用须知》
               </button>
-              <button onClick={() => setShowRuleModal('business')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
-                《业务说明》
-              </button>
-              <button onClick={() => setShowRuleModal('privacy')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
-                《隐私政策》
-              </button>
+
+              {/* 协议与须知细则链接 */}
+              <div className="mt-3 text-center text-[10.5px] text-[#8C6246]">
+                <div>开通前请阅读</div>
+                <div className="inline-flex space-x-1.5 text-[#8C531B] mt-1 font-medium">
+                  <button onClick={() => setShowRuleModal('notice')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
+                    《会员使用须知》
+                  </button>
+                  <button onClick={() => setShowRuleModal('business')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
+                    《业务说明》
+                  </button>
+                  <button onClick={() => setShowRuleModal('privacy')} className="hover:underline hover:text-[#5A330B] underline cursor-pointer">
+                    《隐私政策》
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
       </div>
 
@@ -448,7 +530,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
         <div className="flex items-center justify-center space-x-3">
           <div className="h-px bg-gradient-to-r from-transparent via-amber-300 to-amber-400 w-16"></div>
           <h3 className="text-sm font-black text-slate-800 tracking-wider">
-            开通后可得会员服务
+            开通后尊享特权
           </h3>
           <div className="h-px bg-gradient-to-l from-transparent via-amber-300 to-amber-400 w-16"></div>
         </div>
@@ -461,14 +543,10 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
 
         {/* --------------------------------------------------------- */}
         {/* 【权益1】做任务每月必得 2元话费直减券 */}
-        {/* (完全复刻截图权益1顶部蓝色/暖色角标 + 主卡片 + 5个横向小方块结构) */}
-        {/* --------------------------------------------------------- */}
-        {/* --------------------------------------------------------- */}
-        {/* 【权益1】做任务每月必得 2元话费直减券 */}
         {/* (样式与上部优惠券100%保持一致的霸屏大券样式) */}
         {/* --------------------------------------------------------- */}
         <div className="bg-white rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-100 relative pt-10 sm:pt-11 overflow-hidden">
-          {/* 左上角贴纸角标（暖金色系） */}
+          {/* 左上角贴纸角标 */}
           <div className="absolute top-0 left-4 bg-gradient-to-r from-[#FF9800] to-[#D97706] text-white text-[10.5px] font-black px-3 py-1 rounded-b-xl shadow-xs flex items-center space-x-1 z-10">
             <span className="bg-white text-[#B45309] text-[9px] px-1 py-0.2 rounded font-black mr-1">
               权益1
@@ -476,88 +554,56 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
             <span>话费直减每月必得</span>
           </div>
 
-          {/* 优惠券主体：严格复刻上部霸屏券设计规范 */}
-          <div className="w-full bg-white rounded-2xl border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
+          {/* 拿出的副标题：展示在红框指定位置 */}
+          <div className="text-xs text-slate-500 mb-2.5 font-medium pt-0.5">
+            充值自动立减 · 三网通用
+          </div>
+
+          {/* 优惠券主体：严格复刻确认的设计规范（券面不展示副标题） */}
+          <div className="w-full bg-white rounded-[20px] border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
             {/* 左侧券主体 */}
-            <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
-              <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-3 border-r border-amber-100/90 min-w-[62px] sm:min-w-[68px]">
-                <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5">
-                  每月必得
-                </span>
-                <div className="flex items-baseline">
-                  <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">2</span>
-                  <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
-                </div>
-              </div>
-              <div className="pl-2 sm:pl-3 flex-1 min-w-0">
-                <div className="text-xs sm:text-[13px] font-black text-slate-900 truncate">
-                  话费直减现金券
-                </div>
-                <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
-                  充值自动立减 · 三网通用
-                </div>
+            <div className="w-[78px] sm:w-[84px] shrink-0 flex flex-col items-center justify-center py-2.5 px-1 border-r border-[#FFA000]/25 bg-white">
+              <span className="border border-[#F59E0B] text-[#B45309] bg-white text-[9px] font-black px-2 py-0.5 rounded-full mb-1 leading-none shadow-xs">
+                每月必得
+              </span>
+              <div className="flex items-baseline text-[#9A3412]">
+                <span className="text-2xl sm:text-[28px] font-black italic tracking-tighter">2</span>
+                <span className="text-xs sm:text-sm font-black ml-0.5">元</span>
               </div>
             </div>
 
-            {/* 中间上下打孔凹槽与垂直虚线 */}
+            {/* 中间券信息区：只展示主标题 */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center py-2.5 px-3 sm:px-3.5 bg-white">
+              <div className="text-[15px] sm:text-[16px] font-black text-slate-900 tracking-tight leading-tight">
+                话费直减券
+              </div>
+            </div>
+
+            {/* 中间上下打孔凹槽 */}
             <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
-              <div className="w-3 h-3 rounded-full bg-white border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
-              <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
-              <div className="w-3 h-3 rounded-full bg-white border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
+              <div className="w-3.5 h-3.5 rounded-full bg-white border-b-2 border-[#FFA000] -mt-[9px] -ml-[7px]"></div>
+              <div className="w-3.5 h-3.5 rounded-full bg-white border-t-2 border-[#FFA000] -mb-[9px] -ml-[7px]"></div>
             </div>
 
             {/* 右侧领券/使用按钮 */}
-            <div className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center">
+            <div className="w-[82px] sm:w-[90px] shrink-0 bg-[#FFA000] flex flex-col items-center justify-center p-2 text-center">
               <button
-                onClick={() => {
-                  if (isMember) {
-                    setBillCouponClaimed(true);
-                    showToast('已享受话费直减优惠，立即去充值！');
-                    if (onNavigateOrderDetail) onNavigateOrderDetail();
-                  } else {
-                    onOpenCheckout(currentSku);
-                  }
-                }}
-                className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-1 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate"
+                onClick={handleClaimBillCoupon}
+                className={`w-full text-xs font-black py-1.5 px-1 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate ${
+                  isMember && billCouponClaimed
+                    ? 'bg-[#FFF8EE] text-[#9A3412]/80 border border-amber-300/80'
+                    : 'bg-white hover:bg-[#FFFDF5] text-[#9A3412]'
+                }`}
               >
-                {isMember ? (billCouponClaimed ? '立即使用' : '立即领取') : '立即领取'}
+                {isMember ? (billCouponClaimed ? '已领取' : '立即领取') : '立即领取'}
               </button>
             </div>
           </div>
 
-          {/* 横向5个迷你权益小卡片（数字高亮转为金褐色，无非按钮红色） */}
-          <div className="grid grid-cols-5 gap-1.5 mt-3 pt-1 text-center">
-            <div className="bg-amber-50/40 border border-amber-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
-              <span className="text-xs font-black text-[#B45309]">立减2元</span>
-              <span className="text-[9px] text-slate-500 mt-0.5">充值直减</span>
-            </div>
-            <div className="bg-amber-50/40 border border-amber-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
-              <span className="text-xs font-black text-amber-700">自动抵扣</span>
-              <span className="text-[9px] text-slate-500 mt-0.5">无门槛减</span>
-            </div>
-            <div className="bg-slate-50/90 border border-slate-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
-              <span className="text-xs font-black text-slate-800">全网通用</span>
-              <span className="text-[9px] text-slate-500 mt-0.5">三网支持</span>
-            </div>
-            <div className="bg-slate-50/90 border border-slate-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
-              <span className="text-xs font-black text-slate-800">每月发放</span>
-              <span className="text-[9px] text-slate-500 mt-0.5">次月自动到</span>
-            </div>
-            <div className="bg-slate-50/90 border border-slate-100 rounded-xl p-1.5 flex flex-col items-center justify-center">
-              <span className="text-xs font-black text-slate-800">安全合规</span>
-              <span className="text-[9px] text-slate-500 mt-0.5">动信通直发</span>
-            </div>
-          </div>
-
-          {/* 卡片底部说明小字 */}
-          <div className="mt-2 text-center text-[10px] text-slate-400">
-            每月自动发放到账，充值话费时系统将优先抵扣2元现金
-          </div>
         </div>
 
         {/* --------------------------------------------------------- */}
         {/* 【权益2】活动福利月月享 抖音电商神券 */}
-        {/* (前端对用户展示单个券样式，提示最高50元最低5元，点击后根据后端逻辑变成实际发给用户的券) */}
         {/* --------------------------------------------------------- */}
         <div className="bg-white rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-100 relative pt-10 sm:pt-11 overflow-hidden">
           {/* 左上角贴纸角标 */}
@@ -568,107 +614,50 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
             <span>活动福利月月享</span>
           </div>
 
-          <div className="text-xs text-slate-500 mb-2.5 flex items-center justify-between gap-1 pt-0.5">
-            <span className="truncate">抖音电商专享神券（最高50元，最低5元）</span>
-            <span className="shrink-0 text-[10px] bg-amber-50 text-amber-800 font-bold px-1.5 py-0.5 rounded border border-amber-200/80">
-              高额补贴
-            </span>
+          {/* 拿出的副标题：展示在红框指定位置 */}
+          <div className="text-xs text-slate-500 mb-2.5 font-medium pt-0.5">
+            最高可领50元 · 购物自动抵扣
           </div>
 
-          {/* 前端展示单个券样式：告诉用户最高可以领取50元，最低是5元，点击后变成实际发放的券 */}
-          <div className="space-y-2.5">
-            {!isRevealed ? (
-              /* 未点击/未领取：单个券展示（最高50元，最低5元） */
-              <div className="w-full max-w-full bg-white rounded-2xl border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative transition-all">
-                <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
-                  <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-3 border-r border-amber-100/90 min-w-[68px] sm:min-w-[76px]">
-                    <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5">
-                      最高50元
-                    </span>
-                    <div className="flex items-baseline">
-                      <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">5~50</span>
-                      <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
-                    </div>
-                  </div>
-                  <div className="pl-2 sm:pl-3 flex-1 min-w-0">
-                    <div className="text-xs sm:text-[13px] font-black text-slate-900 truncate">
-                      抖音电商专享神券
-                    </div>
-                    <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
-                      最高可领50元 · 最低5元保底 · 自动发放
-                    </div>
-                  </div>
-                </div>
-
-                {/* 中间打孔凹槽 */}
-                <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
-                  <div className="w-3 h-3 rounded-full bg-white border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
-                  <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
-                  <div className="w-3 h-3 rounded-full bg-white border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
-                </div>
-
-                {/* 右侧动作按钮区 */}
-                <div className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center">
-                  <button
-                    onClick={handleRevealCoupon}
-                    className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate"
-                  >
-                    立即领取
-                  </button>
-                </div>
+          {/* 优惠券主体：严格复刻确认的设计规范（券面不展示副标题） */}
+          <div className="w-full bg-white rounded-[20px] border-2 border-[#FFA000] shadow-[0_4px_14px_rgba(255,160,0,0.12)] overflow-hidden flex items-stretch relative">
+            {/* 左侧券主体 */}
+            <div className="w-[78px] sm:w-[84px] shrink-0 flex flex-col items-center justify-center py-2.5 px-1 border-r border-[#FFA000]/25 bg-white">
+              <span className="border border-[#F59E0B] text-[#B45309] bg-white text-[9px] font-black px-2 py-0.5 rounded-full mb-1 leading-none shadow-xs">
+                最高50元
+              </span>
+              <div className="flex items-baseline text-[#9A3412]">
+                <span className="text-xl sm:text-[24px] font-black italic tracking-tighter">5~50</span>
+                <span className="text-xs sm:text-sm font-black ml-0.5">元</span>
               </div>
-            ) : (
-              /* 点击后：根据后端身份识别，变成实际发放给用户的券 */
-              <div className="w-full max-w-full bg-white rounded-2xl border-2 border-[#FF9800] ring-2 ring-amber-300/70 shadow-md overflow-hidden flex items-stretch relative transition-all">
-                <div className="flex-1 min-w-0 flex items-center p-2.5 sm:p-3 relative bg-white">
-                  <div className="shrink-0 flex flex-col items-center justify-center pr-2 sm:pr-3 border-r border-amber-100/90 min-w-[68px] sm:min-w-[76px]">
-                    <span className="border border-amber-400/90 text-amber-800 bg-amber-50 text-[9px] font-black px-1.5 py-0.2 rounded-full mb-0.5">
-                      {simulatedUserType === 'new_user' ? '新客礼遇' : '商城专享'}
-                    </span>
-                    <div className="flex items-baseline">
-                      {simulatedUserType === 'new_user' ? (
-                        <>
-                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">最高</span>
-                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">50</span>
-                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-[9.5px] font-black text-amber-800 mr-0.5">满99减</span>
-                          <span className="text-2xl sm:text-3xl font-black italic tracking-tighter text-[#B45309]">5</span>
-                          <span className="text-xs sm:text-sm font-black text-[#B45309] ml-0.5">元</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="pl-2 sm:pl-3 flex-1 min-w-0">
-                    <div className="text-xs sm:text-[13px] font-black text-slate-900 truncate">
-                      {simulatedUserType === 'new_user' ? '抖音电商新人神券' : '抖音电商专享券'}
-                    </div>
-                    <div className="text-[10px] sm:text-[11px] text-amber-800/80 font-medium mt-0.5 truncate">
-                      已自动匹配并存入绑定的抖音账号
-                    </div>
-                  </div>
-                </div>
+            </div>
 
-                {/* 中间打孔凹槽 */}
-                <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
-                  <div className="w-3 h-3 rounded-full bg-white border-b border-[#FFA000] -mt-1.5 -ml-1.5"></div>
-                  <div className="w-px h-full border-r border-dashed border-[#FFA000]/60 my-1"></div>
-                  <div className="w-3 h-3 rounded-full bg-white border-t border-[#FFA000] -mb-1.5 -ml-1.5"></div>
-                </div>
-
-                {/* 右侧动作按钮区 */}
-                <div className="w-[74px] sm:w-20 shrink-0 bg-gradient-to-r from-[#FFA200] to-[#FF8C00] flex flex-col items-center justify-center p-1 sm:p-1.5 text-center">
-                  <button
-                    onClick={() => showToast('神券已在抖音商城卡券包生效，打开抖音APP即可使用！')}
-                    className="w-full max-w-[66px] sm:max-w-[72px] bg-[#FFFDF5] hover:bg-white text-[#9A3412] text-[11px] sm:text-xs font-black py-1.5 px-0.5 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate"
-                  >
-                    立即使用
-                  </button>
-                </div>
+            {/* 中间券信息区：只展示主标题 */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center py-2.5 px-3 sm:px-3.5 bg-white">
+              <div className="text-[15px] sm:text-[16px] font-black text-slate-900 tracking-tight leading-tight">
+                抖音电商专享神券
               </div>
-            )}
+            </div>
+
+            {/* 中间上下打孔凹槽 */}
+            <div className="relative w-0 flex flex-col justify-between items-center z-10 shrink-0">
+              <div className="w-3.5 h-3.5 rounded-full bg-white border-b-2 border-[#FFA000] -mt-[9px] -ml-[7px]"></div>
+              <div className="w-3.5 h-3.5 rounded-full bg-white border-t-2 border-[#FFA000] -mb-[9px] -ml-[7px]"></div>
+            </div>
+
+            {/* 右侧动作按钮区 */}
+            <div className="w-[82px] sm:w-[90px] shrink-0 bg-[#FFA000] flex flex-col items-center justify-center p-2 text-center">
+              <button
+                onClick={handleClaimEcomCoupon}
+                className={`w-full text-xs font-black py-1.5 px-1 rounded-full shadow-xs active:scale-95 transition-all cursor-pointer text-center truncate ${
+                  isMember && ecomCouponClaimed
+                    ? 'bg-[#FFF8EE] text-[#9A3412]/80 border border-amber-300/80'
+                    : 'bg-white hover:bg-[#FFFDF5] text-[#9A3412]'
+                }`}
+              >
+                {isMember ? (ecomCouponClaimed ? '已领取' : '立即领取') : '立即领取'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -760,25 +749,25 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                 onClick={() => handleClaimMeituan(10)}
                 className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
                   claimedMeituan10
-                    ? 'bg-slate-100 text-slate-400'
+                    ? 'bg-amber-100/90 text-amber-900 border border-amber-300/80'
                     : checkInDays >= 3
                     ? 'bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white shadow-xs'
                     : 'bg-amber-50 text-amber-800 border border-amber-200'
                 }`}
               >
-                {claimedMeituan10 ? '10元已领' : '领10元券'}
+                {claimedMeituan10 ? '已领取' : (isMember ? '立即领取' : '领10元券')}
               </button>
               <button
                 onClick={() => handleClaimMeituan(20)}
                 className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
                   claimedMeituan20
-                    ? 'bg-slate-100 text-slate-400'
+                    ? 'bg-amber-100/90 text-amber-900 border border-amber-300/80'
                     : checkInDays >= 5
                     ? 'bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white shadow-xs'
                     : 'bg-amber-50 text-amber-800 border border-amber-200'
                 }`}
               >
-                {claimedMeituan20 ? '20元已领' : '领20元券'}
+                {claimedMeituan20 ? '已领取' : (isMember ? '立即领取' : '领20元券')}
               </button>
             </div>
           </div>
@@ -811,12 +800,12 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           </p>
           <p>
             <strong className="text-slate-900 font-bold">产品资费：</strong>
-            <strong className="text-slate-900 font-black">1.99元/月</strong>，按自然月计费。若享用收银台立减等平台优惠，<strong className="text-[#B45309] font-bold">首月实付金额仅需0.01元</strong>，具体以收银台实付金额为准。
+            <strong className="text-slate-900 font-black">1.99元/月</strong>。若享用收银台立减等平台优惠，<strong className="text-[#B45309] font-bold">首月实付金额仅需0.01元</strong>，具体以收银台实付金额为准。
           </p>
           <p>
             <strong className="text-slate-900 font-bold">产品有效期：</strong>
-            <strong className="text-slate-900">长期有效</strong>，如双方在有效期届满前无异议，<strong className="text-amber-700 font-bold">有效期自动续展，每次续展1个月</strong>。
-            <strong className="text-emerald-700 font-bold">有效期内可随时退订</strong>。如需退订，可在通信服务中心「个人中心-续费管理」或在签约代扣平台随时关闭代扣。退订后产品次月起失效。退订后仍可享受服务至当月（自然月）月底，次月起失效。
+            <strong className="text-slate-900">长期有效</strong>。产品有效期按照<strong>用户下单的日期 + 31天</strong>计算。如双方在有效期届满前无异议，<strong className="text-amber-700 font-bold">有效期自动续展，每次续展31天（1个月）</strong>。
+            <strong className="text-emerald-700 font-bold">有效期内可随时退订</strong>。退订方式：本产品非通过本小程序退订，请通过<strong>抖音App - 我的订单 - 该笔订单 - 续费管理</strong>取消自动续费。取消后，您在当前计费周期内（下单日期+31天）仍可正常享受会员权益，期满后不再扣费与续展。
           </p>
           <p>
             <strong className="text-slate-900 font-bold">服务内容：</strong>
@@ -859,7 +848,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
               },
               {
                 q: '如何取消连续包月或关闭自动续费？',
-                a: '用户随时可在本小程序「续费管理」页点击「取消自动续费」，或在支付软件扣款管理中取消签约，当月已生效权益继续享受至自然月底。'
+                a: '请打开抖音App，前往「我 - 我的订单 - 该笔订单 - 续费管理」即可取消自动续费。取消后，当前周期（下单日期+31天）内已生效权益仍可正常使用至期满。'
               }
             ].map((faq, idx) => (
               <div key={idx} className="py-2.5">
@@ -887,7 +876,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
 
 
       {/* ========================================================= */}
-      {/* 10. 底部吸底悬浮 CTA (严格参考截图底部的吸底悬浮组件) */}
+      {/* 10. 底部吸底悬浮组件：新客开通栏（仅未开通用户展示） */}
       {/* ========================================================= */}
       {!isMember && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md px-4 pt-3 pb-3 border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] max-w-[420px] mx-auto">
@@ -895,7 +884,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           <div className="relative">
             <div className="absolute -top-6 right-6 z-10 bg-gradient-to-r from-[#FFD600] to-[#FFA000] text-amber-950 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md flex items-center space-x-1 border border-white">
               <Sparkles className="w-3 h-3 text-amber-900" />
-              <span>开通立送2元话费</span>
+              <span>{isExpired ? '重新开通立送2元话费' : '开通立送2元话费'}</span>
             </div>
 
             <button
@@ -903,7 +892,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
               className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white py-3.5 px-5 rounded-full shadow-lg shadow-red-500/25 flex flex-col items-center justify-center active:scale-[0.99] transition-transform cursor-pointer"
             >
               <div className="text-sm font-black tracking-wide">
-                首月仅0.01元 次月起1.99元/月
+                {isExpired ? '1.99元/月 一单回本' : '首月仅0.01元 次月起1.99元/月'}
               </div>
               <div className="text-[10px] text-white/90 font-medium">
                 <span className="underline font-bold">连续包月</span> 随时可退
@@ -912,7 +901,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           </div>
 
           <div className="mt-2 text-center text-[10px] text-slate-400">
-            <span>按自然月计费，开通前请阅读</span>
+            <span>开通前请阅读</span>
             <div className="inline-flex space-x-1 text-[#8C531B] ml-1">
               <button onClick={() => setShowRuleModal('notice')} className="hover:underline hover:text-[#5A330B]">
                 《会员使用须知》
@@ -1017,16 +1006,16 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
               {showRuleModal === 'notice' && (
                 <>
                   <p>1. 本会员名为「DXT通信充值会员」，包含2元话费直减券、抖音电商随机神券及连续签到生活券。</p>
-                  <p>2. 新用户首月优惠立减1.98元，仅需0.01元；次月起恢复1.99元/月按自然月自动扣费。</p>
+                  <p>2. 新用户首月优惠立减1.98元，仅需0.01元；次月起按1.99元/周期自动扣费，每个计费周期为下单日期起31天。</p>
                   <p>3. 订购成功后权益立即下发至绑定手机号账户，充话费无门槛抵扣2元。</p>
                   <p>4. 连续签到3天送10元美团券，连续签到5天送20元美团券，断签后需重新打卡。</p>
                 </>
               )}
               {showRuleModal === 'business' && (
                 <>
-                  <p>1. 资费标准：首月0.01元，次月起1.99元/月。由通信服务中心与动信通联合提供支撑。</p>
-                  <p>2. 自动续费：每月自然月底自动扣款续展，支持微信、支付宝或抖音支付代扣。</p>
-                  <p>3. 退订规则：可随时在续费管理中关闭自动续订，退订后当月权益保留至自然月底。</p>
+                  <p>1. 资费标准：首月0.01元，次月起1.99元/周期。由通信服务中心与动信通联合提供支撑。</p>
+                  <p>2. 计费周期：按照用户下单日期+31天计算，期满无异议自动续展1个周期（31天）。</p>
+                  <p>3. 退订规则：本产品通过抖音App「我 - 我的订单 - 该笔订单 - 续费管理」申请取消，当前周期权益保留至期满。</p>
                 </>
               )}
               {showRuleModal === 'privacy' && (

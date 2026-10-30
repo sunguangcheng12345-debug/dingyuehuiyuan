@@ -82,7 +82,9 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
             }}
             className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30 hover:bg-blue-400/30 transition-colors"
           >
-            {userStatus === 'non_member' || subscribedSkuIds.length === 0 
+            {userStatus === 'cancelled_member'
+              ? '用户身份: 会员已过期 (1.99元/月恢复)'
+              : userStatus === 'non_member' || subscribedSkuIds.length === 0 
               ? '用户身份: 未开通 (首月0.01元)' 
               : '用户身份: DXT会员已生效 (1.99元/月)'}
           </button>
@@ -100,8 +102,8 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
                 setUserStatus('non_member');
                 setSubscribedSkuIds([]);
               }}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                userStatus === 'non_member' || subscribedSkuIds.length === 0 
+              className={`px-2 py-1 rounded-lg font-bold transition-all ${
+                userStatus === 'non_member' && subscribedSkuIds.length === 0 
                   ? 'bg-slate-700 text-white shadow-xs' 
                   : 'text-slate-400 hover:text-slate-200'
               }`}
@@ -113,13 +115,26 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
                 setUserStatus('active_member');
                 setSubscribedSkuIds(['tier_0']); // DXT通信充值会员
               }}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+              className={`px-2 py-1 rounded-lg font-bold transition-all ${
                 userStatus === 'active_member' && subscribedSkuIds.includes('tier_0')
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-xs' 
                   : 'text-blue-300/70 hover:text-blue-200'
               }`}
             >
               已开通DXT会员
+            </button>
+            <button
+              onClick={() => {
+                setUserStatus('cancelled_member');
+                setSubscribedSkuIds([]);
+              }}
+              className={`px-2 py-1 rounded-lg font-bold transition-all ${
+                userStatus === 'cancelled_member'
+                  ? 'bg-gradient-to-r from-amber-600 to-rose-600 text-white font-black shadow-xs' 
+                  : 'text-amber-400/80 hover:text-amber-300'
+              }`}
+            >
+              已过期(退订老客)
             </button>
           </div>
         </div>
@@ -236,9 +251,10 @@ export const PhoneSimulator: React.FC<PhoneSimulatorProps> = ({
           {currentScreen === 'vip_center' && (
             <VipMemberCenter
               userStatus={userStatus}
-              subscribedSkuId={subscribedSkuIds[0] || null}
-              subscribedSkuIds={subscribedSkuIds}
+              subscribedSkuId={subscribedSkuIds[0] || (userStatus === 'active_member' ? 'tier_0' : null)}
+              subscribedSkuIds={subscribedSkuIds.length > 0 ? subscribedSkuIds : (userStatus === 'active_member' ? ['tier_0'] : [])}
               onBackToRecharge={() => setCurrentScreen('recharge_home')}
+              onNavigateHome={() => setCurrentScreen('recharge_home')}
               onOpenUnsubscribe={() => setShowUnsubscribe(true)}
               onOpenCheckout={handleOpenCheckout}
               onGoToRenewalManagement={() => setCurrentScreen('renewal_management')}

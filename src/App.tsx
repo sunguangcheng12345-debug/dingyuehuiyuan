@@ -3,6 +3,7 @@ import { AppTab, SimUserStatus } from './types';
 import { Navbar } from './components/Navbar';
 import { PhoneSimulator } from './components/PhoneSimulator';
 import { PrdDocument } from './components/PrdDocument';
+import { DesignAssetsPage } from './components/DesignAssetsPage';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('prototype');
@@ -33,6 +34,10 @@ export default function App() {
               setUserStatus={setUserStatus}
             />
           </div>
+        )}
+
+        {activeTab === 'assets' && (
+          <DesignAssetsPage />
         )}
 
         {activeTab === 'prd' && (

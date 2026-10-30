@@ -124,7 +124,7 @@ export const OrderConfirmPage: React.FC<OrderConfirmPageProps> = ({
           {/* Pricing Policy Box */}
           <div className="bg-[#F8F9FA] rounded-xl p-3 text-xs leading-relaxed text-slate-600 font-normal">
             <span className="text-[#FE2C55] font-bold">首月优惠价仅需 {firstMonthPrice.toFixed(2)} 元</span>
-            <span>，次月起恢复为每月 {renewalPrice.toFixed(2)} 元，自动续订，按自然月计费，可随时取消</span>
+            <span>，次月起恢复为每月 {renewalPrice.toFixed(2)} 元，自动续订，可随时取消</span>
           </div>
         </div>
 

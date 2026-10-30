@@ -54,6 +54,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('assets')}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md transition-all relative ${
+              activeTab === 'assets'
+                ? 'bg-gradient-to-r from-amber-500 to-rose-600 text-white shadow-sm font-bold'
+                : 'text-amber-300 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <span className="relative flex h-2 w-2 mr-0.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+            </span>
+            <span>🎨 设计源文件与切图</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('prd')}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md transition-all ${
               activeTab === 'prd'
@@ -62,12 +77,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>PRD 产品规范</span>
+            <span>PRD 规范</span>
           </button>
 
           <button
             onClick={() => setActiveTab('dual')}
-            className={`hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-md transition-all ${
+            className={`hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-md transition-all ${
               activeTab === 'dual'
                 ? 'bg-rose-600 text-white shadow-sm font-semibold'
                 : 'text-slate-300 hover:text-white hover:bg-slate-700/50'

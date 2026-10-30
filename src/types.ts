@@ -1,4 +1,4 @@
-export type AppTab = 'prototype' | 'prd' | 'dual';
+export type AppTab = 'prototype' | 'prd' | 'dual' | 'assets';
 
 export type SimUserStatus = 'non_member' | 'active_member' | 'pending_renewal' | 'cancelled_member';
 
