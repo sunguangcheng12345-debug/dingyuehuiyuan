@@ -41,13 +41,14 @@ export const PrdDocument: React.FC = () => {
 一、核心定位与业务突破：
 1. 聚焦 DXT通信充值会员，新用户首月仅需0.01元，次月恢复1.99元/月连续包月自动续费；
 2. 小程序命名规范为【通信服务中心】，严禁出现外部运营商与非许可品牌；
-3. 核心权益双气泡呈现：
-   - 每月必得：2元话费直减券（无门槛直接抵扣）
-   - 随机2选1：最高50元抖音电商新人券 或 满99减5抖音电商专享券（后端基于手机号画像判断，前端趣味盲盒呈现）
+3. 核心权益呈现与领取规则：
+   - 券需手动领取：用户开通会员后，优惠券需在页面手动点击「立即领取」才可以到账；
+   - 每月必得：2元话费直减券（充值时自动抵扣现金）；
+   - 核心专享：抖音电商专享神券（立减5元，满99可用），成功领取后在【抖音APP-我-我的订单-券红包】查看；
 4. 会员天天打卡专属签到福利：
    - 连续签到3天：免费领取10元美团生活券
    - 连续签到5天：免费领取20元美团生活券
-5. 业务说明与常见问题规范：严格对标官方透明计费规范，开通前合规提示，随时支持退订。
+5. 业务说明、常见问题与合规规范：开通前合规展示《会员使用须知》、《业务说明》、《隐私政策》。有效期按下单日期+31天计算，退订通过【抖音APP-我-我的订单-该笔订单-续费管理】取消。
 6. 已开通DXT会员展示体系：从“拉新转化”彻底切换为“履约促活与留存”，展示尊贵黑金卡、已生效券去使用、充值复购CTA、累计省钱数据与透明续费管理。`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -69,7 +70,7 @@ export const PrdDocument: React.FC = () => {
                 通信服务中心 · DXT通信充值会员产品需求文档 (PRD)
               </h1>
               <p className="mt-2 text-slate-400 text-sm max-w-3xl leading-relaxed">
-                全面规范通信服务中心小程序DXT通信充值会员首月0.01元尝鲜、次月1.99元连续包月交易链路、2元话费必得直减、电商神券随机2选1盲盒机制、已开通会员尊享状态展示、连续签到美团券履约与退订管理。
+                全面规范通信服务中心小程序DXT通信充值会员首月0.01元尝鲜、次月1.99元连续包月交易链路、2元话费必得直减、5元电商专享神券、已开通会员尊享状态展示、连续签到美团券履约与退订管理。
               </p>
             </div>
 
@@ -95,8 +96,8 @@ export const PrdDocument: React.FC = () => {
 
             <div>
               <div className="text-slate-400 font-medium">核心双气泡权益</div>
-              <div className="text-emerald-400 font-black text-sm sm:text-base mt-0.5">2元话费 + 电商2选1</div>
-              <div className="text-[10px] text-slate-500 mt-0.5">必得2元话费券 + 最高50元电商券</div>
+              <div className="text-emerald-400 font-black text-sm sm:text-base mt-0.5">2元话费 + 5元电商券</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">必得2元话费券 + 5元电商立减券</div>
             </div>
 
             <div>
@@ -206,11 +207,11 @@ export const PrdDocument: React.FC = () => {
                     </tr>
                     <tr>
                       <td className="py-3 px-3 font-bold text-white">券2 (电商神券)</td>
-                      <td className="py-3 px-4 text-slate-400">单券展示5~50元盲盒，按钮【立即领取】</td>
+                      <td className="py-3 px-4 text-slate-400">展示5元立减券（弱化满99门槛），按钮【立即领取】</td>
                       <td className="py-3 px-4 text-amber-300">
-                        标贴【已发放到账】，展示匹配的券（新客50元/老客99-5），按钮<strong>【去抖音使用】</strong>
+                        标贴【已发放到账】，展示5元电商立减券，按钮<strong>【去抖音使用】</strong>
                       </td>
-                      <td className="py-3 px-3 text-slate-400">让用户感知大额收益已落袋，去商城结算抵扣</td>
+                      <td className="py-3 px-3 text-slate-400">突出立减5元收益，弱化满99门槛，去商城结算抵扣</td>
                     </tr>
                     <tr>
                       <td className="py-3 px-3 font-bold text-white">核心CTA区</td>
@@ -272,8 +273,8 @@ export const PrdDocument: React.FC = () => {
                   <span>模块二：双券待使用态与闭环交互</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  • <strong>券1 (2元话费券)</strong>：右侧药丸按钮文案固定为【去充值立减】。用户点击后，Toast 提示“已为您享受2元直减，正在前往充值”，并直接导航至充值中心，充值50元立减为48元。<br/>
-                  • <strong>券2 (电商神券)</strong>：根据后端返回用户画像，已锁定展示新人券或专享券，按钮为【去抖音使用】，点击直接拉起抖音卡包或复制券码。
+                  • <strong>券1 (2元话费券)</strong>：用户在会员中心手动点击【立即领取】到账，充值时自动抵扣2元现金。<br/>
+                  • <strong>券2 (电商神券)</strong>：固定为5元立减券（满99减5元），用户在页面手动点击【立即领取】到账；成功领取后打开【抖音APP-我-我的订单-券红包】查看与使用。
                 </p>
               </div>
 
@@ -283,8 +284,7 @@ export const PrdDocument: React.FC = () => {
                   <span>模块三：阳光续费管理与退订保障机制</span>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  合规是连续包月业务的生命线。前端在卡片右上角、核心CTA区辅助行、底部悬浮栏三处均设置明显的【续费管理 / 退订说明】入口。<br/>
-                  用户点击可一键进入独立管理页，查看签约订单、代扣签约流水号，并随时支持一键取消自动续费。取消后当月权益保留至月底，次月不再扣费。
+                  合规是连续包月业务的生命线。会员有效期按照用户下单日期+31天计算。用户如需退订，通过【抖音APP-我-我的订单-该笔订单-续费管理】取消自动续费。取消后在当前周期内权益保留至期满。
                 </p>
               </div>
 
@@ -447,7 +447,7 @@ export const PrdDocument: React.FC = () => {
                   <span>扣款与多商品计费规则</span>
                 </div>
                 <div>1. <strong>扣款渠道：</strong>全链路统一接入抖音支付（极速免密扣款），由第三方服务商动信通作为商户主体发起代扣；</div>
-                <div>2. <strong>代扣时机：</strong>每个订购商品在生效截止日前 24 小时内由系统自动发起续费代扣，扣款成功后生效期顺延 1 个自然月（30天）；</div>
+                <div>2. <strong>代扣时机：</strong>每个订购商品在生效截止日前 24 小时内由系统自动发起续费代扣，扣款成功后生效期顺延 31 天（按照用户下单日期+31天计算）；</div>
                 <div>3. <strong>多商品并行计费：</strong>若用户在 10月8日 订购黑金卡，10月15日 加购影音卡，系统分别在各自到期日前 24 小时扣款，彼此账单与权益完全独立。</div>
               </div>
             </div>

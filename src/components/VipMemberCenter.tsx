@@ -72,7 +72,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
   const [claimedMeituan20, setClaimedMeituan20] = useState<boolean>(false);
   const [showRewardModal, setShowRewardModal] = useState<{ title: string; desc: string; value: string; badge: string } | null>(null);
 
-  // Random 2-in-1 eCommerce Coupon State (前端展示随机2选1，后端基于新老客下发50元或99减5)
+  // eCommerce Coupon State (固定满99减5专享券)
   const [simulatedUserType, setSimulatedUserType] = useState<'new_user' | 'regular_user'>('new_user');
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
@@ -131,14 +131,14 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
         return;
       }
       if (claimedMeituan10) {
-        showToast('您已成功领取10元美团生活券');
+        showToast('您已成功领取10元美团生活券！可打开美团app-我的-红包卡券查看。');
         return;
       }
       setClaimedMeituan10(true);
       setShowRewardModal({
         badge: '生活优惠券',
         title: '美团生活券 10元 已发放',
-        desc: '已成功存入美团卡券包，外卖、美食餐饮到店无门槛立减！',
+        desc: '已成功存入美团卡券包！请打开美团app-我的-红包卡券查看与使用。',
         value: '¥10.00'
       });
     } else if (tier === 20) {
@@ -147,14 +147,14 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
         return;
       }
       if (claimedMeituan20) {
-        showToast('您已成功领取20元美团生活券');
+        showToast('您已成功领取20元美团生活券！可打开美团app-我的-红包卡券查看。');
         return;
       }
       setClaimedMeituan20(true);
       setShowRewardModal({
         badge: '超值大额券',
         title: '美团生活券 20元 已发放',
-        desc: '已成功存入美团卡券包，实付满30元立减20元，休闲娱乐畅快抵扣！',
+        desc: '已成功存入美团卡券包！请打开美团app-我的-红包卡券查看与使用。',
         value: '¥20.00'
       });
     }
@@ -174,70 +174,28 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
     showToast('🎉 领取成功！2元话费直减券已生效，充值话费时将自动为您抵扣。');
   };
 
-  // 电商专享神券领取（点击后触发后端逻辑发新客50元或99-5券）
+  // 电商专享神券领取（固定满99减5元优惠券）
   const handleClaimEcomCoupon = () => {
     if (!isMember) {
-      handleRevealCoupon();
-      return;
-    }
-    if (ecomCouponClaimed) {
-      showToast('您已成功领取抖音电商专享神券，已存入您的抖音商城卡券包！');
-      return;
-    }
-    if (isSpinning) return;
-    setIsSpinning(true);
-    setTimeout(() => {
-      setIsSpinning(false);
-      setIsRevealed(true);
-      setEcomCouponClaimed(true);
-      if (simulatedUserType === 'new_user') {
-        setShowRewardModal({
-          badge: '新客专属礼遇',
-          title: '恭喜领取 50元 抖音电商新人神券！',
-          desc: '经系统后端识别，您的账号为抖音电商新客，已为您匹配最高50元新人专属神券！已自动存入绑定的抖音商城账户。',
-          value: '¥50.00'
-        });
-      } else {
-        setShowRewardModal({
-          badge: '商城专享礼遇',
-          title: '恭喜领取 满99减5 抖音电商专享券！',
-          desc: '经系统后端识别，已为您匹配全品类通用的满99减5元电商专享券！已自动存入抖音商城卡券包。',
-          value: '¥5.00'
-        });
-      }
-    }, 350);
-  };
-
-  // Reveal eCommerce coupon based on backend user identity check (未开通用户点击)
-  const handleRevealCoupon = () => {
-    if (isRevealed) {
       onOpenCheckout(currentSku);
       return;
     }
-    if (isSpinning) return;
-    setIsSpinning(true);
-    setTimeout(() => {
-      setIsSpinning(false);
-      setIsRevealed(true);
-      if (isMember) {
-        setEcomCouponClaimed(true);
-      }
-      if (simulatedUserType === 'new_user') {
-        setShowRewardModal({
-          badge: '新客专属礼遇',
-          title: isMember ? '恭喜领取 50元 抖音电商新人券！' : '获得 50元 抖音电商新人券！',
-          desc: '经系统后端识别，您的账号为抖音电商新客，已为您匹配最高50元新人专属神券！已自动存入绑定的抖音商城账户。',
-          value: '¥50.00'
-        });
-      } else {
-        setShowRewardModal({
-          badge: '商城专享礼遇',
-          title: isMember ? '恭喜领取 满99减5 抖音电商专享券！' : '获得 满99减5 抖音电商专享券！',
-          desc: '经系统后端识别，已为您匹配全品类通用的满99减5元电商专享券！已自动存入抖音商城卡券包。',
-          value: '¥5.00'
-        });
-      }
-    }, 350);
+    if (ecomCouponClaimed) {
+      showToast('您已成功领取抖音电商专享券！可打开抖音APP-我-我的订单-券红包查看。');
+      return;
+    }
+    setEcomCouponClaimed(true);
+    setShowRewardModal({
+      badge: '专享立减券',
+      title: '恭喜领取 5元 抖音电商专享券！',
+      desc: '专享立减券已成功发放到账！请打开抖音APP-我-我的订单-券红包查看与使用。',
+      value: '¥5.00'
+    });
+  };
+
+  // Reveal eCommerce coupon (未开通用户点击)
+  const handleRevealCoupon = () => {
+    onOpenCheckout(currentSku);
   };
 
   return (
@@ -346,7 +304,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
         <div className="text-center relative z-10 mb-3.5">
           <div className="flex items-center justify-center">
             <h2 className="text-2xl sm:text-[28px] font-black tracking-tight text-[#9E3900] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
-              DXT通信充值会员
+              通信充值会员
             </h2>
             {/* 右上角金色发光星钻徽章 */}
             <div className="ml-1.5 -mt-3.5 relative">
@@ -450,12 +408,13 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                   {/* 左侧券主体 */}
                   <div className="w-[78px] sm:w-[84px] shrink-0 flex flex-col items-center justify-center py-2.5 px-1 border-r border-[#FFA000]/25 bg-white">
                     <span className="border border-[#F59E0B] text-[#B45309] bg-white text-[9px] font-black px-2 py-0.5 rounded-full mb-1 leading-none shadow-xs">
-                      最高50元
+                      专享立减
                     </span>
                     <div className="flex items-baseline text-[#9A3412]">
-                      <span className="text-xl sm:text-[24px] font-black italic tracking-tighter">5~50</span>
+                      <span className="text-xl sm:text-[24px] font-black italic tracking-tighter">5</span>
                       <span className="text-xs sm:text-sm font-black ml-0.5">元</span>
                     </div>
+                    <div className="text-[8.5px] text-[#9A3412]/60 font-medium scale-90 -mt-0.5">满99可用</div>
                   </div>
 
                   {/* 中间券信息区 */}
@@ -464,7 +423,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                       抖音电商专享神券
                     </div>
                     <div className="text-[11px] sm:text-[11.5px] text-[#8C4A16] font-medium mt-1 tracking-tight leading-tight">
-                      最高可领50元 · 购物自动抵扣
+                      电商立减5元 · 购物自动抵扣
                     </div>
                   </div>
 
@@ -494,10 +453,18 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                 onClick={() => onOpenCheckout(currentSku)}
                 className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] hover:brightness-105 active:scale-[0.98] transition-all text-white py-3.5 px-5 rounded-full shadow-[0_8px_25px_rgba(255,40,75,0.38)] flex flex-col items-center justify-center cursor-pointer"
               >
-                <div className="text-[15px] font-black tracking-wide">
-                  {isExpired ? '1.99元/月 一单回本' : '首月仅0.01元 次月起1.99元/月'}
+                <div className="font-black tracking-wide">
+                  {isExpired ? (
+                    <span className="text-[15px]">1.99元/月 一单回本</span>
+                  ) : (
+                    <div className="flex items-center justify-center leading-tight">
+                      <span className="text-sm font-black">首月仅</span>
+                      <span className="text-[20px] sm:text-[22px] font-black text-white mx-0.5 tracking-tight">0.01元</span>
+                      <span className="text-xs font-bold text-white/90 ml-1.5">次月起1.99元/月</span>
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs text-white/95 font-medium mt-0.5">
+                <div className="text-xs text-white/90 font-medium mt-1">
                   连续包月 随时可退
                 </div>
               </button>
@@ -616,7 +583,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
 
           {/* 拿出的副标题：展示在红框指定位置 */}
           <div className="text-xs text-slate-500 mb-2.5 font-medium pt-0.5">
-            最高可领50元 · 购物自动抵扣
+            电商立减5元 · 购物自动抵扣
           </div>
 
           {/* 优惠券主体：严格复刻确认的设计规范（券面不展示副标题） */}
@@ -624,12 +591,13 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
             {/* 左侧券主体 */}
             <div className="w-[78px] sm:w-[84px] shrink-0 flex flex-col items-center justify-center py-2.5 px-1 border-r border-[#FFA000]/25 bg-white">
               <span className="border border-[#F59E0B] text-[#B45309] bg-white text-[9px] font-black px-2 py-0.5 rounded-full mb-1 leading-none shadow-xs">
-                最高50元
+                专享立减
               </span>
               <div className="flex items-baseline text-[#9A3412]">
-                <span className="text-xl sm:text-[24px] font-black italic tracking-tighter">5~50</span>
+                <span className="text-2xl sm:text-[28px] font-black italic tracking-tighter">5</span>
                 <span className="text-xs sm:text-sm font-black ml-0.5">元</span>
               </div>
+              <div className="text-[8.5px] text-[#9A3412]/60 font-medium scale-90 -mt-0.5">满99可用</div>
             </div>
 
             {/* 中间券信息区：只展示主标题 */}
@@ -805,11 +773,17 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           <p>
             <strong className="text-slate-900 font-bold">产品有效期：</strong>
             <strong className="text-slate-900">长期有效</strong>。产品有效期按照<strong>用户下单的日期 + 31天</strong>计算。如双方在有效期届满前无异议，<strong className="text-amber-700 font-bold">有效期自动续展，每次续展31天（1个月）</strong>。
-            <strong className="text-emerald-700 font-bold">有效期内可随时退订</strong>。退订方式：本产品非通过本小程序退订，请通过<strong>抖音App - 我的订单 - 该笔订单 - 续费管理</strong>取消自动续费。取消后，您在当前计费周期内（下单日期+31天）仍可正常享受会员权益，期满后不再扣费与续展。
+            <strong className="text-emerald-700 font-bold">有效期内可随时退订</strong>。退订方式：本产品非通过本小程序退订，请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，您在当前计费周期内（下单日期+31天）仍可正常享受会员权益，期满后不再扣费与续展。
           </p>
           <p>
             <strong className="text-slate-900 font-bold">服务内容：</strong>
-            <strong className="text-[#B45309] font-bold">每月必得2元话费直减券</strong>，同时可随机获得<strong className="text-amber-700 font-bold">抖音电商神券（最高50元）</strong>。连续签到可免费领取<strong className="text-amber-800 font-bold">美团生活券（最高20元）</strong>。
+            开通会员后，各项优惠券需用户在页面<strong>手动领取方可到账</strong>生效：
+            <br />
+            1. <strong>话费直减券</strong>：每月专享2元话费直减券，手动领取后充值话费时自动抵扣现金；
+            <br />
+            2. <strong>抖音电商神券</strong>：专享5元电商立减券（满99减5元）。用户成功手动领取后，可打开<strong>抖音APP-我-我的订单-券红包</strong>查看与使用；
+            <br />
+            3. <strong>美团生活券</strong>：连续打卡签到可免费领取最高20元美团生活券。用户成功手动领取后，可打开<strong>美团app-我的-红包卡券</strong>查看与使用。
           </p>
           <p>
             <strong className="text-slate-900 font-bold">其他说明：</strong>
@@ -832,23 +806,23 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
             {[
               {
                 q: '什么是DXT通信充值会员首月0.01元？',
-                a: '新用户首次开通可享受首月仅需0.01元的超级特惠尝鲜价，第二个月起按1.99元/月连续包月自动续费，随时可以在续费管理中关闭。'
+                a: '新用户首次开通可享受首月仅需0.01元的超级特惠尝鲜价。开通会员后，各项优惠券需用户在页面手动点击「立即领取」即可到账生效。第二个月起按1.99元/周期（31天）连续包月自动续费，随时可在续费管理中关闭。'
               },
               {
-                q: '2元话费直减券如何使用？',
-                a: '会员开通后系统自动存入卡包，在通信服务中心为手机号充值时系统将无门槛自动勾选抵扣2元现金。'
+                q: '2元话费直减券如何领取与使用？',
+                a: '用户开通会员后，券需要手动领取才可以到账。请在会员中心点击「立即领取」，领取成功后存入卡包；在充值中心为手机号充值时系统无门槛自动立减抵扣2元现金。'
               },
               {
-                q: '抖音电商神券是如何随机发放的？',
-                a: '开通会员后，系统在权益专享池中随机匹配专属好礼（最高50元电商新人券或满99减5专享券），即刻发放到当前绑定手机号的抖音商城账户中。'
+                q: '抖音电商神券如何领取？在哪里查看？',
+                a: '会员专享5元抖音电商立减券（满99元可用）。用户开通会员后需手动点击「立即领取」即可到账；用户成功领取后，可打开抖音APP-我-我的订单-券红包进行查看与使用（购物时自动抵扣）。'
               },
               {
-                q: '连续签到美团生活券如何领取？',
-                a: '会员每天点击「今日打卡」累计天数，连续签到满3天可点击「领10元券」，连续签到满5天可点击「领20元券」，券码自动直发到美团账户。'
+                q: '连续签到美团生活券如何领取？在哪里查看？',
+                a: '会员每天点击「今日打卡」累计天数，连续签到满3天可点击「领10元券」，连续签到满5天可点击「领20元券」，需在页面手动点击领取；成功领取后，可打开美团app-我的-红包卡券进行查看与使用。'
               },
               {
                 q: '如何取消连续包月或关闭自动续费？',
-                a: '请打开抖音App，前往「我 - 我的订单 - 该笔订单 - 续费管理」即可取消自动续费。取消后，当前周期（下单日期+31天）内已生效权益仍可正常使用至期满。'
+                a: '退订不是通过本小程序退订，请打开抖音APP-我-我的订单-该笔订单-续费管理进行取消。会员有效期是按照用户下单的日期+31天计算，取消后在当前计费周期内已领取的权益仍可正常使用至期满。'
               }
             ].map((faq, idx) => (
               <div key={idx} className="py-2.5">
@@ -889,12 +863,20 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
 
             <button
               onClick={() => onOpenCheckout(currentSku)}
-              className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white py-3.5 px-5 rounded-full shadow-lg shadow-red-500/25 flex flex-col items-center justify-center active:scale-[0.99] transition-transform cursor-pointer"
+              className="w-full bg-gradient-to-r from-[#FFA200] via-[#FF4D55] to-[#FF2855] text-white py-3 px-5 rounded-full shadow-lg shadow-red-500/25 flex flex-col items-center justify-center active:scale-[0.99] transition-transform cursor-pointer"
             >
-              <div className="text-sm font-black tracking-wide">
-                {isExpired ? '1.99元/月 一单回本' : '首月仅0.01元 次月起1.99元/月'}
+              <div className="font-black tracking-wide">
+                {isExpired ? (
+                  <span className="text-sm font-black">1.99元/月 一单回本</span>
+                ) : (
+                  <div className="flex items-center justify-center leading-tight">
+                    <span className="text-xs font-black">首月仅</span>
+                    <span className="text-[17px] sm:text-[18px] font-black text-white mx-0.5 tracking-tight">0.01元</span>
+                    <span className="text-[11px] font-bold text-white/90 ml-1">次月起1.99元/月</span>
+                  </div>
+                )}
               </div>
-              <div className="text-[10px] text-white/90 font-medium">
+              <div className="text-[10px] text-white/90 font-medium mt-0.5">
                 <span className="underline font-bold">连续包月</span> 随时可退
               </div>
             </button>
@@ -997,31 +979,37 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                   <div className="bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-amber-950 font-bold">
                     💰 怎么开通最划算？
                   </div>
-                  <p>1. <strong>首月仅需0.01元</strong>：新用户首次开通立享全额立减，直接获得2元话费直减券，首单充值净赚1.99元！</p>
-                  <p>2. <strong>抖音电商神券</strong>：开通后自动派发，新客专享50元大额神券，老客立享满99减5券。</p>
-                  <p>3. <strong>打卡领美团券</strong>：连续签到满3天领10元美团生活券，满5天领20元美团生活券，外卖到店均可用！</p>
-                  <p>4. <strong>无捆绑随时退</strong>：连续包月到期前无异议自动续展，在小程序内可随时一键取消自动续费。</p>
+                  <p>1. <strong>首月仅需0.01元</strong>：新用户首次开通立享全额立减，开通后在页面手动点击「立即领取」2元话费直减券，充值即可自动立减2元！</p>
+                  <p>2. <strong>抖音电商神券</strong>：开通后手动点击「立即领取」，立得5元电商专享券！用户成功领取后，打开<strong>抖音APP-我-我的订单-券红包</strong>即可查看与使用。</p>
+                  <p>3. <strong>打卡领美团券</strong>：连续签到满3天领10元美团生活券，满5天领20元美团生活券，成功领取后打开<strong>美团app-我的-红包卡券</strong>查看，外卖到店均可用！</p>
+                  <p>4. <strong>无捆绑随时退</strong>：周期按下单日期+31天计算，退订请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>随时取消。</p>
                 </>
               )}
               {showRuleModal === 'notice' && (
                 <>
-                  <p>1. 本会员名为「DXT通信充值会员」，包含2元话费直减券、抖音电商随机神券及连续签到生活券。</p>
-                  <p>2. 新用户首月优惠立减1.98元，仅需0.01元；次月起按1.99元/周期自动扣费，每个计费周期为下单日期起31天。</p>
-                  <p>3. 订购成功后权益立即下发至绑定手机号账户，充话费无门槛抵扣2元。</p>
-                  <p>4. 连续签到3天送10元美团券，连续签到5天送20元美团券，断签后需重新打卡。</p>
+                  <p>1. <strong>权益手动领取规则</strong>：用户开通本会员后，各项优惠券及权益需用户在页面<strong>手动点击「立即领取」才可以到账</strong>生效，未领取的权益不会自动下发。</p>
+                  <p>2. <strong>抖音电商神券说明</strong>：会员专享5元抖音电商立减券（满99减5元）。用户成功领取后，查看路径为：打开<strong>抖音APP-我-我的订单-券红包</strong>。</p>
+                  <p>3. <strong>话费直减券说明</strong>：每月可手动领取2元话费直减券1张，领取后在充值中心充值话费时自动无门槛立减抵扣2元现金，三网通用。</p>
+                  <p>4. <strong>产品资费与有效期</strong>：新用户首月优惠仅需0.01元，次月起按1.99元/周期自动续费。每个会员计费周期按照<strong>用户下单的日期+31天</strong>计算，期满自动续展1个月（31天）。</p>
+                  <p>5. <strong>连续签到福利</strong>：连续签到满3天可领10元美团生活券，连续签到满5天可领20元美团生活券，需手动领取。领取后查看路径为：打开<strong>美团app-我的-红包卡券</strong>，断签后需重新打卡累计。</p>
+                  <p>6. <strong>退订方式</strong>：退订不是通过本小程序退订，请打开<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，当前有效期内（下单日期+31天）权益仍可正常使用至期满。</p>
                 </>
               )}
               {showRuleModal === 'business' && (
                 <>
-                  <p>1. 资费标准：首月0.01元，次月起1.99元/周期。由通信服务中心与动信通联合提供支撑。</p>
-                  <p>2. 计费周期：按照用户下单日期+31天计算，期满无异议自动续展1个周期（31天）。</p>
-                  <p>3. 退订规则：本产品通过抖音App「我 - 我的订单 - 该笔订单 - 续费管理」申请取消，当前周期权益保留至期满。</p>
+                  <p>1. <strong>资费与优惠</strong>：产品标准资费1.99元/月（每个周期为31天）。新用户享受首月0.01元特惠尝鲜价，次月起按1.99元/周期扣费续展。</p>
+                  <p>2. <strong>有效期计算规则</strong>：长期有效，有效期按照<strong>用户下单的日期+31天</strong>计算。届满前双方无异议自动续展1个周期（31天）。</p>
+                  <p>3. <strong>权益领取与查验路径</strong>：开通会员后，券需要<strong>手动领取才可以到账</strong>。其中抖音电商神券为5元立减券（满99减5元），用户成功领取后可打开<strong>抖音APP-我-我的订单-券红包</strong>查看与使用；美团生活券成功领取后可打开<strong>美团app-我的-红包卡券</strong>查看与使用；话费直减券手动领取后充值自动立减2元现金。</p>
+                  <p>4. <strong>退订规则与路径</strong>：退订非通过本小程序操作，请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，下单日期+31天周期内权益保留至期满，期满后停止扣费与续订。</p>
+                  <p>5. <strong>服务协议</strong>：无在网期限要求，无合约捆绑，无违约金责任。</p>
                 </>
               )}
               {showRuleModal === 'privacy' && (
                 <>
-                  <p>1. 我们严格保护您的手机号码与充值账户安全，仅用于话费充值与卡券权益核销发放。</p>
-                  <p>2. 不会向任何无关第三方泄露您的账户流水与交易隐私。</p>
+                  <p>1. <strong>信息收集范围</strong>：我们严格保护您的个人信息安全，仅在您开通会员及充值时收集用于服务履约的必要信息（如手机号码、订单号、支付状态）。</p>
+                  <p>2. <strong>卡券发放与查验</strong>：用户开通后手动领取卡券，系统将依据您的账户信息发放对应卡券（抖音电商神券发放至<strong>抖音APP-我-我的订单-券红包</strong>，美团生活券发放至<strong>美团app-我的-红包卡券</strong>，话费直减券发放至本小程序卡包），用于核销和查看明细。</p>
+                  <p>3. <strong>信息安全保护</strong>：我们采用加密传输与严密的数据访问控制机制，绝不会向任何第三方非法出售或泄露您的个人隐私及交易信息。</p>
+                  <p>4. <strong>用户权利与退订</strong>：您有权随时管理或取消授权，退订续费可通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>操作，如需帮助可随时联系在线客服。</p>
                 </>
               )}
             </div>

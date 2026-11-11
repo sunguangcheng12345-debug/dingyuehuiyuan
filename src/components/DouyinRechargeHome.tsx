@@ -192,7 +192,7 @@ export const DouyinRechargeHome: React.FC<DouyinRechargeHomeProps> = ({
                   首月0.01
                 </span>
                 <span className="text-xs font-bold text-slate-800 truncate">
-                  开通【DXT通信充值会员】享2元话费+随机电商券+美团生活券
+                  开通【DXT通信充值会员】享2元话费+5元电商券+美团生活券
                 </span>
               </div>
               <div className="flex items-center text-xs font-bold text-[#FE2C55] shrink-0 ml-1">

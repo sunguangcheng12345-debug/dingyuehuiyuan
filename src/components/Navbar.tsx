@@ -35,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 DXT通信充值会员
               </span>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">首月0.01元 · 次月1.99元/月 · 2元话费必得 · 电商神券随机2选1 · 连续签到美团券</p>
+            <p className="text-xs text-slate-400 hidden sm:block">首月0.01元 · 次月1.99元/月 · 2元话费必得 · 5元电商专享券 · 连续签到美团券</p>
           </div>
         </div>
 

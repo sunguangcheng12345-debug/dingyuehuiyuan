@@ -26,7 +26,7 @@ export interface MembershipSku {
   nominalValue: number; // 感知价值如 72.0
   badge: string;      // "特惠立省"
   highlight: string;
-  ecommerceCouponDesc: string; // "随机2选1：50元抖音电商新人券 / 满99减5专享券"
+  ecommerceCouponDesc: string; // "抖音电商专享神券（立减5元，满99可用）"
   serviceDesc: string;         // "2元话费直减券 + 抖音电商神券 + 签到美团生活券"
   benefits: MembershipBenefitItem[];
   // 头图与商品卡片视觉吸引力配置
