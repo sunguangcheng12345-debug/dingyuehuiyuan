@@ -4,7 +4,7 @@ export const MEMBERSHIP_SKUS: MembershipSku[] = [
   {
     id: 'tier_0',
     tierNumber: '首月0.01元',
-    name: 'DXT通信充值会员',
+    name: '通信充值会员',
     shortName: '通信充值会员',
     price: 1.99,
     firstMonthPrice: 0.01,

@@ -18,7 +18,7 @@ export const RenewalManagementPage: React.FC<RenewalManagementPageProps> = ({
   onUnsubscribeSuccess,
 }) => {
   const finalPrice = selectedSku ? selectedSku.price : (price ?? 1.99);
-  const skuName = selectedSku ? selectedSku.name : 'DXT通信充值会员';
+  const skuName = selectedSku ? selectedSku.name : '通信充值会员';
   const skuTier = selectedSku ? selectedSku.tierNumber : '首月0.01元';
   const skuShortName = selectedSku ? selectedSku.shortName : '通信充值会员';
   const [isActive, setIsActive] = useState(true);

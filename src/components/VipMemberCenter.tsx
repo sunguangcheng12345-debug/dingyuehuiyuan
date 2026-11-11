@@ -99,7 +99,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
   // Sign-in Click Handler
   const handleCheckIn = () => {
     if (!isMember) {
-      showToast('请先开通DXT充值会员即可每日签到打卡！');
+      showToast('请先开通通信充值会员即可每日签到打卡！');
       return;
     }
     if (hasCheckedInToday) {
@@ -764,7 +764,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
         <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 text-xs text-slate-700 leading-relaxed space-y-2.5">
           <p>
             <strong className="text-slate-900 font-bold">产品名称：</strong>
-            DXT通信充值会员尊享权益（编号：DXT25JT2026）
+            通信充值会员尊享权益
           </p>
           <p>
             <strong className="text-slate-900 font-bold">产品资费：</strong>
@@ -805,7 +805,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           <div className="divide-y divide-slate-100">
             {[
               {
-                q: '什么是DXT通信充值会员首月0.01元？',
+                q: '什么是通信充值会员首月0.01元？',
                 a: '新用户首次开通可享受首月仅需0.01元的超级特惠尝鲜价。开通会员后，各项优惠券需用户在页面手动点击「立即领取」即可到账生效。第二个月起按1.99元/周期（31天）连续包月自动续费，随时可在续费管理中关闭。'
               },
               {
@@ -965,7 +965,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                   {showRuleModal === 'notice' && '《会员使用须知》'}
                   {showRuleModal === 'business' && '《业务说明与计费细则》'}
                   {showRuleModal === 'privacy' && '《用户隐私政策》'}
-                  {showRuleModal === 'strategy' && 'DXT会员省钱全攻略'}
+                  {showRuleModal === 'strategy' && '通信充值会员省钱攻略'}
                 </span>
               </h3>
               <button onClick={() => setShowRuleModal(null)} className="text-slate-400 p-1">
