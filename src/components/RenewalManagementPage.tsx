@@ -92,7 +92,7 @@ export const RenewalManagementPage: React.FC<RenewalManagementPageProps> = ({
 
               <div className="flex items-center justify-between">
                 <span className="text-slate-600">续费类型</span>
-                <span className="font-normal text-slate-800">按月续费（按31天计算）</span>
+                <span className="font-normal text-slate-800">按月续费（按自然月计算）</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -156,7 +156,7 @@ export const RenewalManagementPage: React.FC<RenewalManagementPageProps> = ({
 
               <div className="flex items-center justify-between">
                 <span className="text-slate-600">续费类型</span>
-                <span className="font-normal text-slate-800">按月续费（按31天计算）</span>
+                <span className="font-normal text-slate-800">按月续费（按自然月计算）</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -210,7 +210,7 @@ export const RenewalManagementPage: React.FC<RenewalManagementPageProps> = ({
 
             <div className="flex items-center justify-between">
               <span className="text-slate-600">续费类型</span>
-              <span className="font-normal text-slate-800">按月续费（按31天计算）</span>
+              <span className="font-normal text-slate-800">按月续费（按自然月计算）</span>
             </div>
 
             <div className="flex items-center justify-between">

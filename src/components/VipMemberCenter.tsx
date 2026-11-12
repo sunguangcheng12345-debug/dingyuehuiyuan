@@ -768,12 +768,12 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
           </p>
           <p>
             <strong className="text-slate-900 font-bold">产品资费：</strong>
-            <strong className="text-slate-900 font-black">1.99元/月</strong>。若享用收银台立减等平台优惠，<strong className="text-[#B45309] font-bold">首月实付金额仅需0.01元</strong>，具体以收银台实付金额为准。
+            <strong className="text-slate-900 font-black">1.99元/月</strong>，按自然月计费。若享用收银台立减等平台优惠，<strong className="text-[#B45309] font-bold">首月实付金额仅需0.01元</strong>，具体以收银台实付金额为准。
           </p>
           <p>
             <strong className="text-slate-900 font-bold">产品有效期：</strong>
-            <strong className="text-slate-900">长期有效</strong>。产品有效期按照<strong>用户下单的日期 + 31天</strong>计算。如双方在有效期届满前无异议，<strong className="text-amber-700 font-bold">有效期自动续展，每次续展31天（1个月）</strong>。
-            <strong className="text-emerald-700 font-bold">有效期内可随时退订</strong>。退订方式：本产品非通过本小程序退订，请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，您在当前计费周期内（下单日期+31天）仍可正常享受会员权益，期满后不再扣费与续展。
+            <strong className="text-slate-900">长期有效</strong>。产品有效期按照<strong>自然月（月对月）</strong>计算，每月在用户签约下单的对应日期自动续费扣款（例如本月5号开通，则后续每月5号为自动续费扣款日）。如双方在有效期届满前无异议，<strong className="text-amber-700 font-bold">有效期自动续展，每次续展1个自然月（1个月）</strong>。
+            <strong className="text-emerald-700 font-bold">有效期内可随时退订</strong>。退订方式：本产品非通过本小程序退订，请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，您在当前计费周期内（至下个自然月对应扣款日前）仍可正常享受会员权益，期满后不再扣费与续订。
           </p>
           <p>
             <strong className="text-slate-900 font-bold">服务内容：</strong>
@@ -806,7 +806,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
             {[
               {
                 q: '什么是通信充值会员首月0.01元？',
-                a: '新用户首次开通可享受首月仅需0.01元的超级特惠尝鲜价。开通会员后，各项优惠券需用户在页面手动点击「立即领取」即可到账生效。第二个月起按1.99元/周期（31天）连续包月自动续费，随时可在续费管理中关闭。'
+                a: '新用户首次开通可享受首月仅需0.01元的超级特惠尝鲜价。开通会员后，各项优惠券需用户在页面手动点击「立即领取」即可到账生效。第二个月起按1.99元/月按自然月连续包月自动续费（每月在下单同日自动扣费），随时可在续费管理中关闭。'
               },
               {
                 q: '2元话费直减券如何领取与使用？',
@@ -822,7 +822,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
               },
               {
                 q: '如何取消连续包月或关闭自动续费？',
-                a: '退订不是通过本小程序退订，请打开抖音APP-我-我的订单-该笔订单-续费管理进行取消。会员有效期是按照用户下单的日期+31天计算，取消后在当前计费周期内已领取的权益仍可正常使用至期满。'
+                a: '退订不是通过本小程序退订，请打开抖音APP-我-我的订单-该笔订单-续费管理进行取消。会员是按自然月计费（每月在开通下单同日扣款），取消后在当前自然月有效期内已领取的权益仍可正常使用至期满，期满后不再扣费与续费。'
               }
             ].map((faq, idx) => (
               <div key={idx} className="py-2.5">
@@ -982,7 +982,7 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                   <p>1. <strong>首月仅需0.01元</strong>：新用户首次开通立享全额立减，开通后在页面手动点击「立即领取」2元话费直减券，充值即可自动立减2元！</p>
                   <p>2. <strong>抖音电商神券</strong>：开通后手动点击「立即领取」，立得5元电商专享券！用户成功领取后，打开<strong>抖音APP-我-我的订单-券红包</strong>即可查看与使用。</p>
                   <p>3. <strong>打卡领美团券</strong>：连续签到满3天领10元美团生活券，满5天领20元美团生活券，成功领取后打开<strong>美团app-我的-红包卡券</strong>查看，外卖到店均可用！</p>
-                  <p>4. <strong>无捆绑随时退</strong>：周期按下单日期+31天计算，退订请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>随时取消。</p>
+                  <p>4. <strong>无捆绑随时退</strong>：按自然月计费（每月在签约开通同日扣款），退订请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>随时取消。</p>
                 </>
               )}
               {showRuleModal === 'notice' && (
@@ -990,17 +990,17 @@ export const VipMemberCenter: React.FC<VipMemberCenterProps> = ({
                   <p>1. <strong>权益手动领取规则</strong>：用户开通本会员后，各项优惠券及权益需用户在页面<strong>手动点击「立即领取」才可以到账</strong>生效，未领取的权益不会自动下发。</p>
                   <p>2. <strong>抖音电商神券说明</strong>：会员专享5元抖音电商立减券（满99减5元）。用户成功领取后，查看路径为：打开<strong>抖音APP-我-我的订单-券红包</strong>。</p>
                   <p>3. <strong>话费直减券说明</strong>：每月可手动领取2元话费直减券1张，领取后在充值中心充值话费时自动无门槛立减抵扣2元现金，三网通用。</p>
-                  <p>4. <strong>产品资费与有效期</strong>：新用户首月优惠仅需0.01元，次月起按1.99元/周期自动续费。每个会员计费周期按照<strong>用户下单的日期+31天</strong>计算，期满自动续展1个月（31天）。</p>
+                  <p>4. <strong>产品资费与有效期</strong>：新用户首月优惠仅需0.01元，次月起按1.99元/月自动续费。每个会员计费周期按照<strong>自然月（月对月）</strong>计算，每月在用户签约下单同日续费扣款，期满自动续展1个自然月（1个月）。</p>
                   <p>5. <strong>连续签到福利</strong>：连续签到满3天可领10元美团生活券，连续签到满5天可领20元美团生活券，需手动领取。领取后查看路径为：打开<strong>美团app-我的-红包卡券</strong>，断签后需重新打卡累计。</p>
-                  <p>6. <strong>退订方式</strong>：退订不是通过本小程序退订，请打开<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，当前有效期内（下单日期+31天）权益仍可正常使用至期满。</p>
+                  <p>6. <strong>退订方式</strong>：退订不是通过本小程序退订，请打开<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，当前自然月有效期内权益仍可正常使用至期满。</p>
                 </>
               )}
               {showRuleModal === 'business' && (
                 <>
-                  <p>1. <strong>资费与优惠</strong>：产品标准资费1.99元/月（每个周期为31天）。新用户享受首月0.01元特惠尝鲜价，次月起按1.99元/周期扣费续展。</p>
-                  <p>2. <strong>有效期计算规则</strong>：长期有效，有效期按照<strong>用户下单的日期+31天</strong>计算。届满前双方无异议自动续展1个周期（31天）。</p>
+                  <p>1. <strong>资费与优惠</strong>：产品标准资费1.99元/月，按自然月计费。新用户享受首月0.01元特惠尝鲜价，次月起按1.99元/月按月扣费续展。</p>
+                  <p>2. <strong>有效期计算规则</strong>：长期有效，有效期按照<strong>自然月（月对月）</strong>计算，每月在用户签约下单同日发起续费代扣（例如本月5号开通，则每月5号扣款）。届满前双方无异议自动续展1个自然月（1个月）。</p>
                   <p>3. <strong>权益领取与查验路径</strong>：开通会员后，券需要<strong>手动领取才可以到账</strong>。其中抖音电商神券为5元立减券（满99减5元），用户成功领取后可打开<strong>抖音APP-我-我的订单-券红包</strong>查看与使用；美团生活券成功领取后可打开<strong>美团app-我的-红包卡券</strong>查看与使用；话费直减券手动领取后充值自动立减2元现金。</p>
-                  <p>4. <strong>退订规则与路径</strong>：退订非通过本小程序操作，请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，下单日期+31天周期内权益保留至期满，期满后停止扣费与续订。</p>
+                  <p>4. <strong>退订规则与路径</strong>：退订非通过本小程序操作，请通过<strong>抖音APP-我-我的订单-该笔订单-续费管理</strong>取消自动续费。取消后，当前自然月周期内权益保留至期满，期满后停止扣费与续订。</p>
                   <p>5. <strong>服务协议</strong>：无在网期限要求，无合约捆绑，无违约金责任。</p>
                 </>
               )}
