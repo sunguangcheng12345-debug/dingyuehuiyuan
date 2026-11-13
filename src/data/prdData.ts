@@ -54,7 +54,7 @@ export const CORE_BENEFITS_MATRIX: BenefitItem[] = [
     actionText: '立即充值抵扣',
     businessReturn: '每月高频使用话费券，增强会员生命周期价值(LTV)与充值粘性',
     status: 'available',
-    description: '会员在页面手动领取后存入卡包，在充值中心为手机号充值话费时无门槛自动扣减2元现金。',
+    description: '会员在页面手动领取后存入卡包，在充值中心为手机号充值话费时自动扣减2元现金。',
     details: [
       '每个月生效一次，当月未用不结转至次月',
       '绑定当前登录手机号，支持为本人或为他人手机号充值抵扣',

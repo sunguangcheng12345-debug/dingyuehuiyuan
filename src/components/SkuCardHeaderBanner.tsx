@@ -124,7 +124,7 @@ export const SkuCardHeaderBanner: React.FC<SkuCardHeaderBannerProps> = ({
               <rect x="2" y="2" width="52" height="24" rx="3.5" stroke="#F59E0B" strokeWidth="1" strokeDasharray="2 1.5" />
               <text x="7" y="18" fill="#DC2626" fontSize="13" fontWeight="900" fontFamily="sans-serif">¥2</text>
               <text x="25" y="14" fill="#B45309" fontSize="7" fontWeight="bold" fontFamily="sans-serif">话费直减</text>
-              <text x="25" y="21" fill="#78350F" fontSize="5.5" fontFamily="sans-serif">立省无门槛</text>
+              <text x="25" y="21" fill="#78350F" fontSize="5.5" fontFamily="sans-serif">三网通用券</text>
             </g>
 
             {/* 浮动金币 1 */}

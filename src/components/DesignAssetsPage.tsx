@@ -320,13 +320,13 @@ export const DesignAssetsPage: React.FC = () => {
     },
     {
       id: 'icon_lightning_fast',
-      name: '⚡ 自动抵扣 · 无门槛闪电立减图标',
+      name: '⚡ 自动抵扣 · 闪电立减图标',
       category: 'icon',
       width: 24,
       height: 24,
       rpxSize: '48rpx × 48rpx',
       description: '特性卡片“自动抵扣”图标',
-      usageTips: '凸显无门槛、自动充值立减',
+      usageTips: '凸显自动充值立减',
       svgCode: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <circle cx="12" cy="12" r="10" fill="#FFF8E7" stroke="#D97706" stroke-width="1.5" />
   <path d="M13 5L8 13H13L11 19L16 11H11L13 5Z" fill="#D97706" />

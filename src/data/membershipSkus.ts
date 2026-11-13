@@ -23,7 +23,7 @@ export const MEMBERSHIP_SKUS: MembershipSku[] = [
         id: 't0_b1',
         type: 'phone_bill',
         title: '2元话费直减券',
-        desc: '每月充话费立减2元现金（需手动领取，无门槛直接抵扣）',
+        desc: '每月充话费立减2元现金（需手动领取，充值自动抵扣）',
         valueTag: '¥2.00 券',
         iconName: 'Smartphone',
         badge: '每月必得'
